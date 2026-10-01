@@ -1,0 +1,6 @@
+# This file is generated from security.json — do not edit it directly.
+# Regenerate with: node scripts/generate-security-txt.js
+
+Contact: mailto:innovation@marincounty.gov
+Preferred-Languages: en
+Expires: 2027-09-25T00:00:00.000Z

@@ -1,0 +1,16 @@
+schema: 1
+
+project:
+  name: Meeting Meter
+  repo: marin-meeting-meter
+  type: app
+  owner: County of Marin
+  audience: staff
+  status: prototype
+
+platform:
+  shell: 1.0.1
+
+deployment:
+  target: github-pages
+  url: https://marincountygov.github.io/marin-meeting-meter/

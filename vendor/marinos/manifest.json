@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "name": "Marin App Shell",
+  "shellVersion": "1.0.1",
+  "marinUiVersion": "1.18.0",
+  "installPath": "vendor/marinos",
+  "fontPathContract": [
+    "../fonts/Jost-wght.ttf",
+    "../fonts/open-sans/OpenSans-VariableFont_wdth,wght.woff2"
+  ],
+  "files": {
+    "README.md": {
+      "bytes": 894,
+      "sha256": "7af120b421b7c20781f8e42740d13449bc0f1969176daabd98ff96703fedf236"
+    },
+    "licenses/LUCIDE_LICENSE.txt": {
+      "bytes": 3208,
+      "sha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57"
+    },
+    "licenses/MARIN_APP_SHELL_LICENSE.txt": {
+      "bytes": 1069,
+      "sha256": "d71155643d5fb89b606e09101c575307425af2eeefa3b4b4d56263a03cb52254"
+    },
+    "licenses/OPEN_SANS_OFL.txt": {
+      "bytes": 4216,
+      "sha256": "01cd5ffb3a528c219a86e49a814c6c53bd8a69b9a3c305dd237074ba1c811af7"
+    },
+    "marinos.css": {
+      "bytes": 110713,
+      "sha256": "67cbaffbddcedb45fac8df30f077f3d034bade5c75301fae3929594faaf5c8fe"
+    },
+    "marinos.js": {
+      "bytes": 54896,
+      "sha256": "2d2215cd3e382d9a61aa4ab75a8227cc00fc52db9f00113b981c9508641d0194"
+    }
+  }
+}

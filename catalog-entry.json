@@ -1,0 +1,14 @@
+{
+  "id": "marin-meeting-meter",
+  "name": "Meeting Meter",
+  "type": "app",
+  "url": "https://marincountygov.github.io/marin-meeting-meter/",
+  "description": "Estimate costs for County meetings.",
+  "audience": "staff",
+  "status": "prototype",
+  "owner": "County of Marin",
+  "icon": {
+    "viewBox": "0 0 48 48",
+    "markup": "<circle cx=\"24\" cy=\"27\" r=\"14\"/><path d=\"M24 19v8l6 4M18 7h12M24 7v6M36 14l3 3\"/>"
+  }
+}

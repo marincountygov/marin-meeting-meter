@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Meeting Meter | County of Marin</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23000'/%3E%3Cg fill='none' stroke='%23e5b53b' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='24' cy='27' r='14'/%3E%3Cpath d='M24 19v8l6 4M18 7h12M24 7v6M36 14l3 3'/%3E%3C/g%3E%3C/svg%3E">
+    <meta name="description" content="Estimate costs for County meetings.">
+    <link rel="stylesheet" href="vendor/marinos/marinos.css">
+    <link rel="stylesheet" href="assets/app.css">
+    <script src="vendor/marinos/marinos.js" defer></script>
+    <script src="assets/app.js" defer></script>
+  </head>
+  <body>
+    <marin-os-banner></marin-os-banner>
+    <marin-app-header
+      app-name="Meeting Meter"
+      app-description="Estimate costs for County meetings."
+    >
+      <template data-icon>
+        <svg viewBox="0 0 48 48"><circle cx="24" cy="27" r="14"/><path d="M24 19v8l6 4M18 7h12M24 7v6M36 14l3 3"/></svg>
+      </template>
+    </marin-app-header>
+    <main id="main" class="container app-main" tabindex="-1">
+      <div id="app-status-message" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+
+      <section id="start" class="meeting-cost-app" data-tab-section="start">
+
+        <div id="meeting-load-state" class="app-alert app-alert--info" role="status" aria-live="polite">Loading job classes and hourly pay rates...</div>
+        <div id="meeting-error-state" class="app-alert app-alert--danger" hidden>
+          <h3>Unable to load meeting cost data</h3>
+          <p>The calculator could not reach the County Open Data JSON feed. Check the network connection or try again.</p>
+          <button type="button" id="meeting-retry-load">Retry</button>
+        </div>
+
+        <div id="meeting-calculator" hidden>
+          <div class="meeting-calculator-layout">
+            <div class="meeting-editor">
+              <section class="app-card meeting-setup-card" aria-labelledby="meeting-setup-heading">
+                <div class="section-heading meeting-section-heading">
+                  <div>
+                    <h3 id="meeting-setup-heading">Meeting setup</h3>
+                  </div>
+                </div>
+
+                <fieldset class="meeting-mode-fieldset">
+                  <legend>Calculation mode</legend>
+                  <div class="meeting-mode-options">
+                    <label for="meeting-mode-duration"><input id="meeting-mode-duration" name="meeting-mode" type="radio" value="duration" checked> Set duration</label>
+                    <label for="meeting-mode-live"><input id="meeting-mode-live" name="meeting-mode" type="radio" value="live"> Live timer</label>
+                  </div>
+                </fieldset>
+
+                <div id="meeting-duration-panel" class="meeting-mode-panel" aria-labelledby="meeting-duration-heading">
+                  <h4 id="meeting-duration-heading">Planned duration</h4>
+                  <div class="meeting-duration-fields">
+                    <label for="meeting-duration-hours">Hours
+                      <input id="meeting-duration-hours" type="number" inputmode="numeric" min="0" max="999" step="1" value="1">
+                    </label>
+                    <label for="meeting-duration-minutes">Minutes
+                      <input id="meeting-duration-minutes" type="number" inputmode="numeric" min="0" max="59" step="1" value="0">
+                    </label>
+                  </div>
+                </div>
+
+                <div id="meeting-live-panel" class="meeting-mode-panel meeting-live-panel" aria-labelledby="meeting-live-heading" hidden>
+                  <h4 id="meeting-live-heading">Live meeting timer</h4>
+                  <div class="meeting-timer" aria-label="Elapsed meeting time">
+                    <time id="meeting-timer-display" datetime="PT0S">00:00:00</time>
+                    <span id="meeting-timer-status" class="meeting-timer-status">Not started</span>
+                  </div>
+                  <div class="meeting-timer-actions" aria-label="Live timer controls">
+                    <button type="button" id="meeting-timer-start">Start</button>
+                    <button type="button" id="meeting-timer-pause" class="secondary" hidden>Pause</button>
+                    <button type="button" id="meeting-timer-resume" hidden>Resume</button>
+                    <button type="button" id="meeting-timer-reset" class="secondary">Reset timer</button>
+                  </div>
+                  <p class="app-help-text">The timer uses elapsed clock time, so the estimate remains accurate if the browser slows background updates.</p>
+                </div>
+
+                <div class="meeting-employer-field">
+                  <div class="meeting-slider-header">
+                    <label for="employer-cost-percent">Estimated employer costs for County personnel (%)</label>
+                    <button type="button" id="employer-info-toggle" class="meeting-info-toggle" aria-expanded="false" aria-controls="employer-info-panel" aria-label="Toggle employer cost details">
+                      <svg class="meeting-info-icon" aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    </button>
+                  </div>
+                  <input id="employer-cost-percent" type="number" inputmode="decimal" min="0" step="0.1" value="138">
+                  <div id="employer-info-panel" class="meeting-info-panel" hidden>
+                    <p>Adds an estimated percentage for benefits and other employer costs to County personnel salary cost only. The default is 138%. It is not applied to non-personnel rates.</p>
+                  </div>
+                </div>
+              </section>
+
+              <div class="meeting-file-controls">
+                <div class="meeting-file-actions" aria-label="Meeting file actions">
+                  <button type="button" id="import-meeting-button" class="secondary">Import meeting</button>
+                  <input id="import-meeting-file" type="file" accept=".json,application/json" hidden>
+                  <button type="button" id="export-meeting-button" class="secondary" hidden>Export meeting</button>
+                </div>
+                <p id="meeting-file-status" class="app-help-text meeting-file-status" role="status" aria-live="polite" aria-atomic="true" hidden></p>
+              </div>
+
+            <div id="meeting-simple-participants">
+              <section class="app-card meeting-participants-card meeting-idle-fade-target" aria-labelledby="meeting-simple-heading">
+                <div class="section-heading meeting-section-heading">
+                  <div>
+                    <h3 id="meeting-simple-heading">Meeting participants &amp; staff level</h3>
+                    <p class="app-help-text">Enter the total number of attendees and adjust the average staff level slider to estimate costs based on County job classifications.</p>
+                  </div>
+                </div>
+                <div class="meeting-simple-fields">
+                  <div class="meeting-participant-field">
+                    <label for="simple-attendees">Total staff attendees
+                      <input id="simple-attendees" type="number" inputmode="numeric" min="1" max="9999" step="1" value="1">
+                    </label>
+                  </div>
+                  <div class="meeting-participant-field meeting-simple-slider-field">
+                    <div class="meeting-slider-header">
+                      <label for="simple-distribution-slider">Average staff level</label>
+                      <button type="button" id="simple-info-toggle" class="meeting-info-toggle" aria-expanded="false" aria-controls="simple-info-panel" aria-label="Toggle interpolation details">
+                        <svg class="meeting-info-icon" aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                      </button>
+                    </div>
+                    <input id="simple-distribution-slider" type="range" min="0" max="100" step="1" value="50" aria-label="Average staff level">
+                    <div class="meeting-slider-labels">
+                      <span>Administrative / Support (15th percentile)</span>
+                      <span>Executive / Director (85th percentile)</span>
+                    </div>
+                    <div id="simple-info-panel" class="meeting-info-panel" hidden>
+                      <p>The slider interpolates between two dynamic hourly pay anchors derived from published County job classes: the 15th percentile (Administrative and Support staff) and the 85th percentile (Executive and Director staff). Moving the slider adjusts the blended average base rate per attendee.</p>
+                    </div>
+                  </div>
+                  <div class="meeting-participant-field meeting-calculated-field">
+                    <span class="meeting-field-label">Blended base hourly rate per attendee</span>
+                    <output id="simple-blended-rate">$0.00/hour</output>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <div id="meeting-detailed-participants" hidden>
+              <section class="app-card meeting-participants-card" aria-labelledby="meeting-participants-heading">
+                <div class="section-heading meeting-section-heading">
+                  <div>
+                    <h3 id="meeting-participants-heading">Participants</h3>
+                    <p class="app-help-text">Add County personnel by classification and pay step, or add non-personnel such as contractors.</p>
+                  </div>
+                  <button type="button" id="add-non-personnel-group" class="secondary">Add non-personnel group</button>
+                </div>
+                <div id="meeting-participant-list" class="meeting-participant-list" aria-label="Meeting participant groups"></div>
+              </section>
+            </div>
+            </div>
+
+            <aside class="meeting-summary-column" aria-labelledby="meeting-summary-heading">
+              <section class="app-card meeting-summary-card">
+                <h3 id="meeting-summary-heading" class="visually-hidden">Meeting cost summary</h3>
+                <p class="meeting-summary-eyebrow">Estimated total meeting cost</p>
+                <p id="meeting-total-heading" class="meeting-total-cost">$0.00</p>
+                <dl class="meeting-summary-list">
+                  <div><dt>Attendees</dt><dd id="meeting-attendee-count">0</dd></div>
+                  <div><dt>Meeting duration</dt><dd id="meeting-duration-summary">1 hour</dd></div>
+                  <div><dt>Combined hourly salary rate</dt><dd id="meeting-hourly-total">$0.00/hour</dd></div>
+                  <div><dt>Salary cost</dt><dd id="meeting-salary-cost">$0.00</dd></div>
+                  <div class="meeting-employer-summary"><dt id="meeting-employer-cost-label">Estimated employer costs (138%)</dt><dd id="meeting-employer-cost">$0.00</dd></div>
+                  <div><dt>Non-personnel cost</dt><dd id="meeting-non-personnel-cost">$0.00</dd></div>
+                  <div class="meeting-total-summary"><dt>Estimated total meeting cost</dt><dd id="meeting-total-cost">$0.00</dd></div>
+                </dl>
+                <button type="button" id="copy-meeting-summary" class="meeting-copy-button" disabled>Copy summary</button>
+                <p id="meeting-copy-status" class="app-help-text meeting-copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
+                <p class="app-help-text meeting-summary-note">This estimate uses published hourly salary rates for County personnel and manually entered hourly rates for non-personnel. It does not represent budget savings that would automatically result from canceling a meeting.</p>
+              </section>
+            </aside>
+
+            <button type="button" id="reset-meeting-calculator" class="secondary meeting-reset-calculator">Reset calculator</button>
+          </div>
+        </div>
+      </section>
+
+      <marin-app-info
+        app-name="Meeting Meter"
+        repo="marin-meeting-meter"
+        security-src="security.json"
+      >
+        <template data-about>
+          <p>Meeting Meter is an internal planning tool for estimating County personnel, employer, and non-personnel costs represented in a meeting. It uses published hourly pay-step rates from the <a href="https://data.marincounty.gov/County-Government/Job-Classifications-and-Pay-Rates/w7uw-fvda/about_data" target="_blank">County of Marin Open Data portal</a> and manually entered rates for non-personnel participants.</p>
+          <div class="app-alert app-alert--info">
+            <strong>Planning estimate:</strong> The result is not an employee-specific payroll or benefits calculation, and it does not mean the total would become available as budget savings if a meeting did not occur.
+          </div>
+          <h3>How the estimate works</h3>
+          <ul>
+            <li>Add one participant group for each County job classification and pay step represented in the meeting.</li>
+            <li>Use <strong>Add non-personnel group</strong> for contractors or other participants who are not represented by a County classification.</li>
+            <li>Enter the number of people in each group.</li>
+            <li>Set a planned duration or use the live timer.</li>
+            <li>Review the separate salary cost, estimated employer costs, non-personnel cost, and estimated total meeting cost.</li>
+            <li>Copy a plain-text summary for use in Outlook, Teams, Word, or another internal tool.</li>
+            <li>Export the current meeting to a JSON file and import it later with the Import meeting button or by dropping the file anywhere on the page.</li>
+          </ul>
+          <h3>Save and reopen a meeting</h3>
+          <p>An exported meeting file includes the calculation mode, planned and live duration values, employer-cost percentage, and complete participant groups. Importing replaces the current calculation. An imported live timer is restored paused so it never starts counting without an explicit action.</p>
+          <h3>Assumptions</h3>
+          <ul>
+            <li>Classifications come only from the County job-classes dataset and must have a published hourly rate.</li>
+            <li>Pay rates default to Step 5 when available. If Step 5 is not published, the highest available step is used. Select another step when the employee's pay step is known.</li>
+            <li>Estimated employer costs default to 138% of salary cost. The percentage is visible and editable, including values greater than 100%.</li>
+            <li>The employer-cost percentage is a general planning assumption for benefits and other employer costs, not an employee-specific calculation.</li>
+            <li>The employer-cost percentage applies only to County personnel salary cost. It is not applied to non-personnel rates.</li>
+            <li>Non-personnel descriptions are optional and limited to Facilitator, Consultant, Vendor staff, and Other non-personnel. Hourly rates are entered manually for each non-personnel group.</li>
+          </ul>
+          <h3>Simple Estimate Mode</h3>
+          <p>By default, the calculator provides a rapid estimate based on the total number of attendees and a staff distribution slider. The slider interpolates between two dynamically calculated rates derived from the currently published County job classes: the 15th percentile of hourly pay rates (representing Administrative and Support staff) and the 85th percentile (representing Executive and Director staff). Moving the slider establishes a blended average hourly rate per attendee based on that selected distribution. This blended base rate is then multiplied by the standard 138% estimated employer cost.</p>
+          <p>To build an estimate using specific, line-by-line participant classifications and pay steps, access the detailed calculator by adding <code>?calc=legit</code> to the web address.</p>
+          <h3>Privacy and storage</h3>
+          <p>The app does not collect employee or contractor names. Calculator entries stay in the current browser session and are not saved to local storage. Exported meeting files are created only when a user chooses Export meeting and remain on that user's device unless the user shares them. Imported files are read locally in the browser and are not uploaded to a server. The browser may keep a short-lived cache of the public job-class dataset so the app can load more quickly.</p>
+        </template>
+      </marin-app-info>
+    </main>
+    <div id="meeting-drop-overlay" class="meeting-drop-overlay" hidden aria-hidden="true">
+      <div class="meeting-drop-overlay__panel">
+        <strong>Drop meeting file to import</strong>
+        <span>Use a JSON file exported by Meeting Meter.</span>
+      </div>
+    </div>
+    <marin-app-footer app-name="Meeting Meter"></marin-app-footer>
+    <marin-app-feedback></marin-app-feedback>
+  </body>
+</html>
