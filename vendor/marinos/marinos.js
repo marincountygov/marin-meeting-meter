@@ -6,7 +6,7 @@
     return;
   }
 
-  const SHELL_VERSION = "1.0.1";
+  const SHELL_VERSION = "1.1.1";
   const MARIN_UI_VERSION = "1.18.0";
   const MARINOS_URL = "https://marincountygov.github.io/marin-os/";
   const CATALOG_URL = `${MARINOS_URL}catalog.json`;
@@ -21,34 +21,19 @@
     updates: "Updates",
   });
 
+  // Generated from the hash-locked vendor/icons/lucide/*.svg at build time.
+  const LUCIDE_ICONS = Object.freeze({"check": "<path d=\"M20 6 9 17l-5-5\"/>", "chevron-down": "<path d=\"m6 9 6 6 6-6\"/>", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>", "layout-grid": "<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"/>"});
+  const LUCIDE_ATTRIBUTES = Object.freeze({
+    viewBox: "0 0 24 24", fill: "none", stroke: "currentColor",
+    "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round",
+  });
+
+  // Text-only fallback links: app identity glyphs belong to the catalog, not
+  // independent hand-maintained shapes inside the shell.
   const FALLBACK_APPS = Object.freeze([
-    {
-      name: "MarinMagic",
-      url: "https://marincountygov.github.io/marin-magic/",
-      icon: {
-        viewBox: "0 0 24 24",
-        markup:
-          '<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/>',
-      },
-    },
-    {
-      name: "Marin Decision Maker",
-      url: "https://marincountygov.github.io/marin-decision-maker/",
-      icon: {
-        viewBox: "0 0 24 24",
-        markup:
-          '<rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/>',
-      },
-    },
-    {
-      name: "MarinDocs",
-      url: "https://marincountygov.github.io/marin-docs/",
-      icon: {
-        viewBox: "0 0 24 24",
-        markup:
-          '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
-      },
-    },
+    { name: "MarinMagic", url: "https://marincountygov.github.io/marin-magic/" },
+    { name: "Marin Decision Maker", url: "https://marincountygov.github.io/marin-decision-maker/" },
+    { name: "MarinDocs", url: "https://marincountygov.github.io/marin-docs/" },
   ]);
 
   function componentWarning(element, message) {
@@ -73,34 +58,30 @@
     return template instanceof HTMLTemplateElement ? template.content.cloneNode(true) : null;
   }
 
-  function createGridIcon() {
-    const namespace = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(namespace, "svg");
-    svg.setAttribute("viewBox", "0 0 24 24");
-    [
-      [3, 3],
-      [14, 3],
-      [14, 14],
-      [3, 14],
-    ].forEach(([x, y]) => {
-      const rect = document.createElementNS(namespace, "rect");
-      rect.setAttribute("width", "7");
-      rect.setAttribute("height", "7");
-      rect.setAttribute("x", String(x));
-      rect.setAttribute("y", String(y));
-      rect.setAttribute("rx", "1");
-      svg.append(rect);
+  function addLucideDefaults(svg) {
+    // Backward compatibility for 1.0.x icon templates that relied on shell CSS.
+    // Do not rewrite consumer geometry or silently replace its identity icon.
+    Object.entries(LUCIDE_ATTRIBUTES).forEach(([name, value]) => {
+      if (!svg.hasAttribute(name)) svg.setAttribute(name, value);
     });
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
     return svg;
   }
 
-  function createStaticSvg(viewBox, markup) {
-    const namespace = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(namespace, "svg");
-    svg.setAttribute("viewBox", viewBox || "0 0 24 24");
-    // This function is used only with immutable icon markup bundled in this file.
+  function createLucideIcon(name, className = "") {
+    const markup = LUCIDE_ICONS[name];
+    if (!markup) throw new Error(`Unknown bundled Lucide icon: ${name}`);
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    addLucideDefaults(svg);
+    // Only immutable, build-validated local SVG children enter this sink.
     svg.innerHTML = markup;
+    if (className) svg.setAttribute("class", className);
     return svg;
+  }
+
+  function lucideMarkup(name, className = "") {
+    return createLucideIcon(name, className).outerHTML;
   }
 
   const SAFE_SVG_ELEMENTS = new Set(["circle", "ellipse", "line", "path", "polygon", "polyline", "rect"]);
@@ -151,6 +132,7 @@
     const namespace = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(namespace, "svg");
     svg.setAttribute("viewBox", iconData.viewBox);
+    addLucideDefaults(svg);
 
     function cloneSafeElement(source, destination) {
       Array.from(source.children).forEach((child) => {
@@ -169,7 +151,7 @@
     return svg.childElementCount ? svg : null;
   }
 
-  function createMenuLink(entry, trustedIcon = false) {
+  function createMenuLink(entry) {
     const href = safeLinkUrl(entry?.url);
     const name = typeof entry?.name === "string" ? entry.name.trim() : "";
     if (!href || !name) return null;
@@ -177,11 +159,7 @@
     const link = document.createElement("a");
     link.href = href;
 
-    const svg = trustedIcon
-      ? entry.icon?.markup
-        ? createStaticSvg(entry.icon.viewBox, entry.icon.markup)
-        : null
-      : createCatalogSvg(entry.icon);
+    const svg = createCatalogSvg(entry.icon);
     if (svg) {
       const icon = document.createElement("span");
       icon.className = "marinos-menu__icon";
@@ -221,7 +199,7 @@
       const brandIcon = document.createElement("span");
       brandIcon.className = "marinos-banner__icon";
       brandIcon.setAttribute("aria-hidden", "true");
-      brandIcon.append(createGridIcon());
+      brandIcon.append(createLucideIcon("layout-grid"));
       toggle.append(brandIcon, document.createTextNode("MarinOS"));
 
       if (label) {
@@ -230,13 +208,7 @@
         toggle.append(sup);
       }
 
-      const caret = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      caret.classList.add("menu-toggle__caret");
-      caret.setAttribute("aria-hidden", "true");
-      caret.setAttribute("viewBox", "0 0 24 24");
-      const caretPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      caretPath.setAttribute("d", "m6 9 6 6 6-6");
-      caret.append(caretPath);
+      const caret = createLucideIcon("chevron-down", "menu-toggle__caret");
       toggle.append(caret);
 
       const panel = document.createElement("div");
@@ -246,7 +218,7 @@
       panel.dataset.catalogUrl = catalogUrl;
 
       FALLBACK_APPS.forEach((entry) => {
-        const link = createMenuLink(entry, true);
+        const link = createMenuLink(entry);
         if (link) panel.append(link);
       });
 
@@ -286,14 +258,20 @@
       const identity = document.createElement("div");
       identity.className = "app-identity";
 
-      const titleRow = document.createElement("div");
-      titleRow.className = "app-title-row";
+      const homeLink = document.createElement("a");
+      homeLink.className = "app-identity__home app-title-row";
+      homeLink.href = "./";
+      homeLink.setAttribute("aria-label", `${appName} home`);
 
       const icon = document.createElement("span");
       icon.className = "app-icon";
       icon.setAttribute("aria-hidden", "true");
-      if (iconTemplate) icon.append(iconTemplate);
-      else icon.append(createGridIcon());
+      if (iconTemplate) {
+        iconTemplate.querySelectorAll("svg").forEach(addLucideDefaults);
+        icon.append(iconTemplate);
+      } else {
+        icon.append(createLucideIcon("layout-grid"));
+      }
 
       const titleCopy = document.createElement("div");
       titleCopy.className = "app-title-copy";
@@ -309,13 +287,7 @@
         titleCopy.append(subtitle);
       }
 
-      titleRow.append(icon, titleCopy);
-
-      const homeLink = document.createElement("a");
-      homeLink.className = "app-identity__home";
-      homeLink.href = "./";
-      homeLink.setAttribute("aria-label", `${appName} home`);
-      homeLink.append(titleRow);
+      homeLink.append(icon, titleCopy);
       identity.append(homeLink);
 
       const actions = document.createElement("div");
@@ -1224,8 +1196,8 @@
               `<p class="app-help-text">${escapeHtml(date)}</p>` +
               body +
               `<button type="button" class="copy-button" data-copy-value="${escapeHtml(copyText)}" data-copy-html="${escapeHtml(copyHtml)}" data-copy-announce="Update copied" aria-label="Copy this update">` +
-              `<svg class="copy-icon" aria-hidden="true" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>` +
-              `<svg class="copy-check-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>` +
+              lucideMarkup("copy", "copy-icon") +
+              lucideMarkup("check", "copy-check-icon") +
               `Copy` +
               `</button>` +
               `</article>`
@@ -1324,6 +1296,12 @@
       if (!section.hidden) loadSecurity();
     }).observe(section, { attributes: true, attributeFilter: ["hidden"] });
   });
+
+  // Preserve older initial-page icons that relied on CSS for presentation.
+  // New app-owned icons must include the full canonical Lucide attributes.
+  document.querySelectorAll(
+    ".app-icon svg, .app-card__icon svg, .docs-brand-icon svg, .copy-button svg, .menu-toggle__caret"
+  ).forEach(addLucideDefaults);
 
   document.documentElement.dataset.marinShellVersion = SHELL_VERSION;
   document.documentElement.dataset.marinUiVersion = MARIN_UI_VERSION;

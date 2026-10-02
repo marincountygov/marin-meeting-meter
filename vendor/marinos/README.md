@@ -1,25 +1,37 @@
-# Marin App Shell distribution
+# Marin App Shell 1.1.1
 
-Version: `1.0.1`
+Pinned Marin UI baseline: 1.18.0.
 
-Marin UI baseline: `1.18.0`
+This directory is generated. Do not edit files inside an application. Load
+`marinos.css` before app CSS and deferred `marinos.js` before app JavaScript.
+The CSS already contains Pico; do not load a separate Pico/shared-brand bundle.
 
-Copy this directory into an application's `vendor/marinos/` directory without modifying its contents.
+## Install the complete runtime
 
-Load the shell before the application's own CSS and JavaScript:
+From the shell source checkout:
 
-```html
-<link rel="stylesheet" href="vendor/marinos/marinos.css">
-<link rel="stylesheet" href="assets/app.css">
-<script src="vendor/marinos/marinos.js" defer></script>
-<script src="assets/app.js" defer></script>
+```bash
+bash scripts/install.sh /path/to/app
 ```
 
-The CSS expects the existing MarinOS font assets at:
+The installer copies this directory to `APP/vendor/marinos/` and synchronizes:
 
 - `vendor/fonts/Jost-wght.ttf`
 - `vendor/fonts/open-sans/OpenSans-VariableFont_wdth,wght.woff2`
+- `vendor/fonts/open-sans/OFL.txt`
+- `vendor/icons/lucide/{layout-grid,chevron-down,copy,check}.svg` and `LICENSE`
 
-The application remains functional with system fallback fonts if those files are absent, but published MarinOS apps should retain the self-hosted fonts.
+Fonts are read from a verified shell `fonts/` cache or a sibling `marin-ui`
+checkout, or from `--font-source /path/to/marin-ui`. Required hashes are in
+`manifest.json`; wrong or missing files fail before application mutation.
+No network download occurs. Do not deploy just this directory without the
+companion assets. After installation, the app needs no sibling repository,
+font service, external icon bundle, package manager, or build step to run.
 
-Do not edit files in this directory inside an application. Upgrade by replacing the complete directory with a newer release.
+Font URLs remain relative to this stylesheet (`../fonts/...`). Source icon
+files are included for traceability; generated JS embeds their canonical
+geometry, so icon rendering requires no extra runtime request.
+
+`manifest.json` records release/file hashes and managed companion assets.
+`brand-source.json` records the reviewed input provenance. Set the app's
+`platform.shell` to `1.1.1` and validate before publishing.

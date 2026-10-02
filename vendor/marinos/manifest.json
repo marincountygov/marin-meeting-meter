@@ -1,17 +1,82 @@
 {
   "schema": 1,
   "name": "Marin App Shell",
-  "shellVersion": "1.0.1",
+  "shellVersion": "1.1.1",
   "marinUiVersion": "1.18.0",
   "installPath": "vendor/marinos",
   "fontPathContract": [
     "../fonts/Jost-wght.ttf",
     "../fonts/open-sans/OpenSans-VariableFont_wdth,wght.woff2"
   ],
+  "fontAssets": {
+    "vendor/fonts/Jost-wght.ttf": {
+      "bytes": 134996,
+      "sha256": "6343b70971000b04c5d401c96ae08ce371086135e999d5e1e1413039c0213076"
+    },
+    "vendor/fonts/open-sans/OpenSans-VariableFont_wdth,wght.woff2": {
+      "bytes": 280576,
+      "sha256": "8dbf3d44655c72437f2a9acc46579058dc7d3f82b2231cfdd82d0d6d61145674"
+    },
+    "vendor/fonts/open-sans/OFL.txt": {
+      "bytes": 4216,
+      "sha256": "01cd5ffb3a528c219a86e49a814c6c53bd8a69b9a3c305dd237074ba1c811af7"
+    }
+  },
+  "companionIcons": {
+    "vendor/icons/lucide/check.svg": {
+      "source": "icons/lucide/check.svg",
+      "bytes": 192,
+      "sha256": "b530d60d6c39c3ff4aa172743239767ced4b2f1ebf3309c06dc15335a64076cc"
+    },
+    "vendor/icons/lucide/chevron-down.svg": {
+      "source": "icons/lucide/chevron-down.svg",
+      "bytes": 189,
+      "sha256": "197fa79b777d0e08a13d82005615716e9219b2cca04c0beff78d49593816fea2"
+    },
+    "vendor/icons/lucide/copy.svg": {
+      "source": "icons/lucide/copy.svg",
+      "bytes": 288,
+      "sha256": "a843b3977ad6be55232c4cc4fa618f26c3d25f6901fdf2a5d1bde008583d9a27"
+    },
+    "vendor/icons/lucide/layout-grid.svg": {
+      "source": "icons/lucide/layout-grid.svg",
+      "bytes": 357,
+      "sha256": "5f36d680531e3bccbf369b01d25b23eaa705d35f4a22dc92dd7cd708c0de767d"
+    },
+    "vendor/icons/lucide/LICENSE": {
+      "source": "icons/lucide/LICENSE",
+      "bytes": 3208,
+      "sha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57"
+    }
+  },
   "files": {
     "README.md": {
-      "bytes": 894,
-      "sha256": "7af120b421b7c20781f8e42740d13449bc0f1969176daabd98ff96703fedf236"
+      "bytes": 1572,
+      "sha256": "a537ed9afcb3d1b3cb644288b3a61fce3553ae522a7207ab14a8116c2003b55b"
+    },
+    "brand-source.json": {
+      "bytes": 2506,
+      "sha256": "c2d3718cb2697e0e821f4cb1116c5b9f441686daf4660d75429d1e2ea72fee64"
+    },
+    "icons/lucide/LICENSE": {
+      "bytes": 3208,
+      "sha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57"
+    },
+    "icons/lucide/check.svg": {
+      "bytes": 192,
+      "sha256": "b530d60d6c39c3ff4aa172743239767ced4b2f1ebf3309c06dc15335a64076cc"
+    },
+    "icons/lucide/chevron-down.svg": {
+      "bytes": 189,
+      "sha256": "197fa79b777d0e08a13d82005615716e9219b2cca04c0beff78d49593816fea2"
+    },
+    "icons/lucide/copy.svg": {
+      "bytes": 288,
+      "sha256": "a843b3977ad6be55232c4cc4fa618f26c3d25f6901fdf2a5d1bde008583d9a27"
+    },
+    "icons/lucide/layout-grid.svg": {
+      "bytes": 357,
+      "sha256": "5f36d680531e3bccbf369b01d25b23eaa705d35f4a22dc92dd7cd708c0de767d"
     },
     "licenses/LUCIDE_LICENSE.txt": {
       "bytes": 3208,
@@ -26,12 +91,12 @@
       "sha256": "01cd5ffb3a528c219a86e49a814c6c53bd8a69b9a3c305dd237074ba1c811af7"
     },
     "marinos.css": {
-      "bytes": 110713,
-      "sha256": "67cbaffbddcedb45fac8df30f077f3d034bade5c75301fae3929594faaf5c8fe"
+      "bytes": 112998,
+      "sha256": "cce1771bb5a7cd4a2680e17f2853602e328feded776fcd1088d643679cdec9ea"
     },
     "marinos.js": {
-      "bytes": 54896,
-      "sha256": "2d2215cd3e382d9a61aa4ab75a8227cc00fc52db9f00113b981c9508641d0194"
+      "bytes": 54479,
+      "sha256": "994f9bee227f8aacdb376c2ffe77122651f2e82b082dae6a2bf1e2e0872992ff"
     }
   }
 }

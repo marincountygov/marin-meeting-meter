@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "marinUiVersion": "1.18.0",
+  "upstream": "https://github.com/marincountygov/marin-ui",
+  "provenance": {
+    "source": "User-supplied marin-mentions-main (1).zip, Marin UI 1.18.0 consumer snapshot",
+    "note": "The CSS and Lucide inputs are preserved byte-for-byte from the supplied consumer. No claim that this is the current upstream main. Review sync-ui.sh changes explicitly.",
+    "gitCommit": null
+  },
+  "files": {
+    "vendor/icons/lucide/LICENSE": {
+      "source": "vendor/icons/lucide/LICENSE",
+      "bytes": 3208,
+      "sha256": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57"
+    },
+    "vendor/icons/lucide/check.svg": {
+      "source": "vendor/icons/lucide/check.svg",
+      "bytes": 192,
+      "sha256": "b530d60d6c39c3ff4aa172743239767ced4b2f1ebf3309c06dc15335a64076cc"
+    },
+    "vendor/icons/lucide/chevron-down.svg": {
+      "source": "vendor/icons/lucide/chevron-down.svg",
+      "bytes": 189,
+      "sha256": "197fa79b777d0e08a13d82005615716e9219b2cca04c0beff78d49593816fea2"
+    },
+    "vendor/icons/lucide/copy.svg": {
+      "source": "vendor/icons/lucide/copy.svg",
+      "bytes": 288,
+      "sha256": "a843b3977ad6be55232c4cc4fa618f26c3d25f6901fdf2a5d1bde008583d9a27"
+    },
+    "vendor/icons/lucide/layout-grid.svg": {
+      "source": "vendor/icons/lucide/layout-grid.svg",
+      "bytes": 357,
+      "sha256": "5f36d680531e3bccbf369b01d25b23eaa705d35f4a22dc92dd7cd708c0de767d"
+    },
+    "vendor/marin-ui/app-brand.css": {
+      "source": "shared/app-brand.css",
+      "bytes": 26047,
+      "sha256": "f27d2605d20c194f42921e1baa69fc71500b36abfc39413f69ec1e207eadb304"
+    },
+    "vendor/pico.min.css": {
+      "source": "vendor/pico.min.css",
+      "bytes": 83319,
+      "sha256": "fbc9a63fc9fc9f72d12fd7fc9806e11fa9f77ae4f9cad146b27003a1119ba3db"
+    }
+  },
+  "fonts": {
+    "vendor/fonts/Jost-wght.ttf": {
+      "source": "vendor/fonts/Jost-wght.ttf",
+      "bytes": 134996,
+      "sha256": "6343b70971000b04c5d401c96ae08ce371086135e999d5e1e1413039c0213076"
+    },
+    "vendor/fonts/open-sans/OpenSans-VariableFont_wdth,wght.woff2": {
+      "source": "vendor/fonts/open-sans/OpenSans-VariableFont_wdth,wght.woff2",
+      "bytes": 280576,
+      "sha256": "8dbf3d44655c72437f2a9acc46579058dc7d3f82b2231cfdd82d0d6d61145674"
+    },
+    "vendor/fonts/open-sans/OFL.txt": {
+      "source": "vendor/fonts/open-sans/OFL.txt",
+      "bytes": 4216,
+      "sha256": "01cd5ffb3a528c219a86e49a814c6c53bd8a69b9a3c305dd237074ba1c811af7"
+    }
+  }
+}
