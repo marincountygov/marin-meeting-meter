@@ -6,10 +6,15 @@
     return;
   }
 
-  const SHELL_VERSION = "1.1.1";
-  const MARIN_UI_VERSION = "1.18.0";
+  const SHELL_VERSION = "1.5.0";
+  const MARIN_UI_VERSION = "1.19.0";
   const MARINOS_URL = "https://marincountygov.github.io/marin-os/";
+  const MARINOS_STATUS_URL = `${MARINOS_URL}#status`;
   const CATALOG_URL = `${MARINOS_URL}catalog.json`;
+  // Google Lighthouse accessibility results for every MarinOS app, written
+  // by marin-os's scripts/lighthouse.js. One shared file, keyed by catalog id.
+  const LIGHTHOUSE_URL = `${MARINOS_URL}data/lighthouse.json`;
+  const WCAG_URL = "https://www.w3.org/TR/WCAG22/";
   const FEEDBACK_URL = "https://form.asana.com/?k=qVUT83d5DBmlDiIyi-WAyQ&d=23133298259496";
   const SECURITY_STANDARD_URL =
     "https://github.com/marincountygov/marin-digital-standards/blob/main/security/standard.md";
@@ -20,6 +25,7 @@
     accessibility: "Accessibility",
     updates: "Updates",
   });
+  const MARINOS_STATUS_LABELS = Object.freeze({ alpha: "Alpha", beta: "Beta", live: "Live" });
 
   // Generated from the hash-locked vendor/icons/lucide/*.svg at build time.
   const LUCIDE_ICONS = Object.freeze({"check": "<path d=\"M20 6 9 17l-5-5\"/>", "chevron-down": "<path d=\"m6 9 6 6 6-6\"/>", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>", "layout-grid": "<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"/>"});
@@ -31,9 +37,9 @@
   // Text-only fallback links: app identity glyphs belong to the catalog, not
   // independent hand-maintained shapes inside the shell.
   const FALLBACK_APPS = Object.freeze([
-    { name: "MarinMagic", url: "https://marincountygov.github.io/marin-magic/" },
+    { name: "Marin Magic", url: "https://marincountygov.github.io/marin-magic/" },
     { name: "Marin Decision Maker", url: "https://marincountygov.github.io/marin-decision-maker/" },
-    { name: "MarinDocs", url: "https://marincountygov.github.io/marin-docs/" },
+    { name: "Marin Docs", url: "https://marincountygov.github.io/marin-docs/" },
   ]);
 
   function componentWarning(element, message) {
@@ -58,12 +64,30 @@
     return template instanceof HTMLTemplateElement ? template.content.cloneNode(true) : null;
   }
 
+  function defaultIconStrokeWidth(svg) {
+    // Legacy app identity artwork uses 48x48 coordinates; Lucide uses 24x24.
+    // Only the known 48x48 compatibility case gets a different default.
+    // Read the attribute, not rendered geometry (no layout measurement).
+    const parts = (svg.getAttribute("viewBox") || "").trim().split(/[\s,]+/);
+    const svgNumber = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
+    const valid = parts.length === 4 && parts.every(
+      (part) => svgNumber.test(part) && Number.isFinite(Number(part))
+    );
+    return valid && Number(parts[2]) === 48 && Number(parts[3]) === 48
+      ? "4"
+      : LUCIDE_ATTRIBUTES["stroke-width"];
+  }
+
   function addLucideDefaults(svg) {
     // Backward compatibility for 1.0.x icon templates that relied on shell CSS.
     // Do not rewrite consumer geometry or silently replace its identity icon.
     Object.entries(LUCIDE_ATTRIBUTES).forEach(([name, value]) => {
-      if (!svg.hasAttribute(name)) svg.setAttribute(name, value);
+      if (name !== "stroke-width" && !svg.hasAttribute(name)) svg.setAttribute(name, value);
     });
+    // An explicit width is app-owned, even when it differs from our default.
+    if (!svg.hasAttribute("stroke-width")) {
+      svg.setAttribute("stroke-width", defaultIconStrokeWidth(svg));
+    }
     svg.setAttribute("aria-hidden", "true");
     svg.setAttribute("focusable", "false");
     return svg;
@@ -151,6 +175,77 @@
     return svg.childElementCount ? svg : null;
   }
 
+  function createStatusBadge(status, className = "", href = "") {
+    const normalizedStatus = typeof status === "string" ? status.trim().toLowerCase() : "";
+    const label = MARINOS_STATUS_LABELS[normalizedStatus];
+    if (!label) return null;
+
+    const badge = href ? document.createElement("a") : document.createElement("span");
+    badge.className = ["app-status", className].filter(Boolean).join(" ");
+    badge.dataset.status = normalizedStatus;
+    badge.textContent = label;
+    if (href) badge.href = href;
+    return badge;
+  }
+
+  function manifestProjectStatus(source) {
+    if (typeof source !== "string") return "";
+    const lines = source.replace(/\r\n?/g, "\n").split("\n");
+    let projectIndent = null;
+
+    for (const line of lines) {
+      if (!line.trim() || line.trimStart().startsWith("#")) continue;
+      const indent = line.length - line.trimStart().length;
+
+      if (projectIndent === null) {
+        if (/^project\s*:\s*(?:#.*)?$/.test(line.trim())) projectIndent = indent;
+        continue;
+      }
+
+      if (indent <= projectIndent) break;
+      if (indent !== projectIndent + 2) continue;
+
+      const match = line.trim().match(/^status\s*:\s*(?:"([^"]*)"|'([^']*)'|([^#]*?))\s*(?:#.*)?$/);
+      if (!match) continue;
+      const value = (match[1] ?? match[2] ?? match[3] ?? "").trim().toLowerCase();
+      return MARINOS_STATUS_LABELS[value] ? value : "";
+    }
+    return "";
+  }
+
+  let localManifestStatus = "";
+
+  function renderAppTitleStatus(status, source) {
+    const title = document.querySelector(".app-title");
+    if (!title) return false;
+    const badge = createStatusBadge(status, "app-title__status", MARINOS_STATUS_URL);
+    if (!badge) return false;
+
+    // Only replace badges owned by the shell. App-authored title content is
+    // never removed. The source marker also lets catalog fallback yield to the
+    // local manifest once it arrives.
+    title.querySelector(".app-title__status[data-marinos-status]")?.remove();
+    badge.dataset.marinosStatus = source;
+    title.append(document.createTextNode(" "), badge);
+    return true;
+  }
+
+  // project.status in the app's own marin.yml is the local source of truth.
+  // Read only that known scalar instead of introducing a browser YAML parser.
+  // If it is missing/unavailable/legacy, catalog matching below remains the
+  // compatibility fallback established in 1.2.0.
+  fetch("marin.yml", { cache: "no-store" })
+    .then((response) => (response.ok ? response.text() : Promise.reject(new Error("bad response"))))
+    .then((source) => {
+      const status = manifestProjectStatus(source);
+      if (!status) return;
+      localManifestStatus = status;
+      renderAppTitleStatus(status, "manifest");
+    })
+    .catch(() => {
+      // Status is supplementary UI; leave catalog/static fallback behavior intact.
+    });
+
   function createMenuLink(entry) {
     const href = safeLinkUrl(entry?.url);
     const name = typeof entry?.name === "string" ? entry.name.trim() : "";
@@ -168,7 +263,13 @@
       link.append(icon);
     }
 
-    link.append(document.createTextNode(name));
+    const nameElement = document.createElement("span");
+    nameElement.className = "marinos-menu__name";
+    nameElement.textContent = name;
+    link.append(nameElement);
+
+    const badge = createStatusBadge(entry?.status, "marinos-menu__status");
+    if (badge) link.append(badge);
     return link;
   }
 
@@ -203,9 +304,16 @@
       toggle.append(brandIcon, document.createTextNode("MarinOS"));
 
       if (label) {
-        const sup = document.createElement("sup");
-        sup.textContent = label;
-        toggle.append(sup);
+        const statusBadge = createStatusBadge(label, "marinos-banner__status");
+        if (statusBadge) {
+          toggle.append(statusBadge);
+        } else {
+          // Preserve arbitrary pre-1.2.0 labels for compatibility. Known
+          // Alpha/Beta/Live values use the shared app-status component.
+          const sup = document.createElement("sup");
+          sup.textContent = label;
+          toggle.append(sup);
+        }
       }
 
       const caret = createLucideIcon("chevron-down", "menu-toggle__caret");
@@ -258,10 +366,8 @@
       const identity = document.createElement("div");
       identity.className = "app-identity";
 
-      const homeLink = document.createElement("a");
-      homeLink.className = "app-identity__home app-title-row";
-      homeLink.href = "./";
-      homeLink.setAttribute("aria-label", `${appName} home`);
+      const titleRow = document.createElement("div");
+      titleRow.className = "app-title-row";
 
       const icon = document.createElement("span");
       icon.className = "app-icon";
@@ -277,7 +383,12 @@
       titleCopy.className = "app-title-copy";
       const heading = document.createElement("h1");
       heading.className = "app-title";
-      heading.textContent = appName;
+      const homeLink = document.createElement("a");
+      homeLink.className = "app-title__link";
+      homeLink.href = "./";
+      homeLink.setAttribute("aria-label", `${appName} home`);
+      homeLink.textContent = appName;
+      heading.append(homeLink);
       titleCopy.append(heading);
 
       if (description) {
@@ -287,8 +398,8 @@
         titleCopy.append(subtitle);
       }
 
-      homeLink.append(icon, titleCopy);
-      identity.append(homeLink);
+      titleRow.append(icon, titleCopy);
+      identity.append(titleRow);
 
       const actions = document.createElement("div");
       actions.className = "app-header__actions";
@@ -467,17 +578,77 @@
         }
 
         if (key === "accessibility") {
-          if (templates.accessibility) {
-            section.append(templates.accessibility);
-          } else {
-            const description = document.createElement("p");
-            description.textContent =
-              `${appName} uses the shared MarinOS interface, including keyboard focus styles, responsive layouts, and reduced-motion support.`;
-            const reporting = document.createElement("p");
-            reporting.textContent =
-              "Use the Feedback control to report an accessibility problem. Include the task, page or feature, browser, and assistive technology involved, when applicable.";
-            section.append(description, reporting);
-          }
+          const standardParagraph = document.createElement("p");
+          standardParagraph.append(document.createTextNode(`${appName} targets `));
+          const wcagLink = document.createElement("a");
+          wcagLink.href = WCAG_URL;
+          wcagLink.textContent = "WCAG 2.2 Level AA";
+          standardParagraph.append(wcagLink, document.createTextNode("."));
+          section.append(standardParagraph);
+
+          if (templates.accessibility) section.append(templates.accessibility);
+
+          const scoreHeading = document.createElement("h3");
+          scoreHeading.textContent = "Accessibility score";
+          const status = document.createElement("p");
+          status.className = "app-help-text";
+          status.dataset.accessibilityStatus = "";
+          status.setAttribute("role", "status");
+          status.setAttribute("aria-live", "polite");
+          status.setAttribute("aria-atomic", "true");
+          status.innerHTML = "Loading accessibility score&hellip;";
+          const content = document.createElement("div");
+          content.dataset.accessibilityContent = "";
+          // The score is read live from marin-os's data/lighthouse.json,
+          // looked up by this app's catalog id (app-id attribute, the
+          // header's app-id, or <body data-app-id>; else matched by URL).
+          section.dataset.accessibilityScores = "";
+          section.dataset.accessibilityAppId = normalizedAttribute(this, "app-id");
+
+          const aboutHeading = document.createElement("h3");
+          aboutHeading.textContent = "About the score";
+          const aboutParagraph = document.createElement("p");
+          aboutParagraph.textContent =
+            "Scores come from Google Lighthouse accessibility testing through the PageSpeed Insights API. Scores range from 0\u2013100. Automated testing can identify many accessibility issues, but a score does not determine WCAG conformance.";
+
+          const standardHeading = document.createElement("h3");
+          standardHeading.textContent = "Accessibility standard";
+          const standardText = document.createElement("p");
+          standardText.append(document.createTextNode("County of Marin digital services target "));
+          const standardLink = document.createElement("a");
+          standardLink.href = WCAG_URL;
+          standardLink.textContent = "WCAG 2.2 Level AA";
+          standardText.append(
+            standardLink,
+            document.createTextNode(
+              ". WCAG provides internationally recognized requirements for making web content accessible to people with disabilities."
+            )
+          );
+
+          const reportHeading = document.createElement("h3");
+          reportHeading.textContent = "Report an issue";
+          const reportText = document.createElement("p");
+          reportText.textContent = `If you experience an accessibility problem with ${appName}, report the issue so we can review it.`;
+          const reportParagraph = document.createElement("p");
+          const reportLink = document.createElement("a");
+          reportLink.href = FEEDBACK_URL;
+          reportLink.target = "_blank";
+          reportLink.rel = "noreferrer";
+          reportLink.textContent = "Report an accessibility issue";
+          reportParagraph.append(reportLink);
+
+          section.append(
+            scoreHeading,
+            status,
+            content,
+            aboutHeading,
+            aboutParagraph,
+            standardHeading,
+            standardText,
+            reportHeading,
+            reportText,
+            reportParagraph
+          );
         }
 
         if (key === "updates") {
@@ -509,9 +680,16 @@
       if (this.dataset.rendered === "true") return;
 
       const appName = normalizedAttribute(this, "app-name", "Application");
-      const links = parseTokenList(this.getAttribute("links"), "about security accessibility updates").filter(
+      const requestedLinks = parseTokenList(this.getAttribute("links"), "about security accessibility updates").filter(
         (key, index, values) => STANDARD_LINKS[key] && values.indexOf(key) === index
       );
+      // About, Security, Accessibility, and Updates are required for every
+      // MarinOS app. Keep legacy `links` ordering, but never let it omit one.
+      const links = [
+        ...requestedLinks,
+        ...Object.keys(STANDARD_LINKS).filter((key) => !requestedLinks.includes(key)),
+      ];
+      const extraLinksTemplate = this.querySelector("template[data-footer-links]");
       const platformName = normalizedAttribute(this, "platform-name", "MarinOS");
       const platformUrl = normalizedAttribute(this, "platform-url", MARINOS_URL);
 
@@ -531,27 +709,64 @@
       name.textContent = appName;
       local.append(name);
 
-      if (links.length) {
-        const navigation = document.createElement("nav");
-        navigation.className = "app-footer__nav";
-        navigation.setAttribute("aria-label", `${appName} information`);
-        links.forEach((key) => {
+      const navigation = document.createElement("nav");
+      navigation.className = "app-footer__nav";
+      navigation.setAttribute("aria-label", `${appName} information`);
+
+      // App-owned footer links are intentionally narrow: only top-level anchors
+      // with an href and visible label are accepted, and they are prepended to
+      // the required standard links. Rebuild rather than clone arbitrary markup.
+      const requiredDestinations = new Set(links.map((key) => `#${key}`));
+      const seenExtraDestinations = new Set();
+      if (extraLinksTemplate instanceof HTMLTemplateElement) {
+        Array.from(extraLinksTemplate.content.children).forEach((source) => {
+          if (!(source instanceof HTMLAnchorElement)) return;
+          const href = source.getAttribute("href")?.trim() || "";
+          const label = source.textContent?.trim() || "";
+          if (!href || !label) return;
+
+          let destinationKey;
+          if (href.startsWith("#")) {
+            destinationKey = href.toLowerCase();
+          } else {
+            let destination;
+            try {
+              destination = new URL(href, window.location.href);
+            } catch {
+              return;
+            }
+            if (!["http:", "https:"].includes(destination.protocol)) return;
+            destinationKey = destination.href;
+          }
+          if (requiredDestinations.has(destinationKey) || seenExtraDestinations.has(destinationKey)) return;
+
+          seenExtraDestinations.add(destinationKey);
           const link = document.createElement("a");
-          link.href = `#${key}`;
-          link.textContent = STANDARD_LINKS[key];
+          link.setAttribute("href", href);
+          link.textContent = label;
           navigation.append(link);
         });
-        local.append(navigation);
       }
 
-      const platform = document.createElement("div");
-      platform.className = "app-footer__platform";
-      const platformLink = document.createElement("a");
-      platformLink.href = platformUrl;
-      platformLink.textContent = platformName;
-      platform.append(platformLink);
+      links.forEach((key) => {
+        const link = document.createElement("a");
+        link.href = `#${key}`;
+        link.textContent = STANDARD_LINKS[key];
+        navigation.append(link);
+      });
+      local.append(navigation);
 
-      inner.append(local, platform);
+      inner.append(local);
+      if (!this.hasAttribute("hide-platform-link")) {
+        const platform = document.createElement("div");
+        platform.className = "app-footer__platform";
+        const platformLink = document.createElement("a");
+        platformLink.href = platformUrl;
+        platformLink.textContent = platformName;
+        platform.append(platformLink);
+        inner.append(platform);
+      }
+
       footer.append(inner);
       this.replaceChildren(footer);
       this.dataset.rendered = "true";
@@ -699,7 +914,7 @@
     // Bump this whenever the expected catalog shape or rendering changes
     // (for example, adding the `icon` field) so browsers holding an older
     // cached shape refetch immediately instead of waiting out the TTL.
-    const CACHE_KEY = "marinos-catalog-cache-v2";
+    const CACHE_KEY = "marinos-catalog-cache-v3";
     const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
     function readCatalogCache() {
@@ -739,6 +954,21 @@
       else marinosMenuPanel.append(fragment);
     }
 
+    function renderOwnStatusBadge(entries) {
+      if (!Array.isArray(entries) || localManifestStatus) return;
+
+      const header = document.querySelector("marin-app-header");
+      const appId = (header ? normalizedAttribute(header, "app-id") : "") || document.body.dataset.appId || "";
+      const current = window.location.href;
+      const self = appId
+        ? entries.find((entry) => entry && entry.id === appId)
+        : entries.find((entry) => {
+            const href = safeLinkUrl(entry?.url);
+            return href && current.startsWith(href);
+          });
+      renderAppTitleStatus(self?.status, "catalog");
+    }
+
     // Stale-while-revalidate: the cache is only for instant paint on repeat
     // visits, never for skipping the network. Always fetch fresh in the
     // background and re-render if it differs, so a catalog.json fix reaches
@@ -746,7 +976,10 @@
     // later — a stale-icon report once took hours to explain because of
     // this cache, before it revalidated on every load like this.
     const cachedEntries = readCatalogCache();
-    if (cachedEntries) renderMarinosMenu(cachedEntries);
+    if (cachedEntries) {
+      renderMarinosMenu(cachedEntries);
+      renderOwnStatusBadge(cachedEntries);
+    }
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 4000);
@@ -754,7 +987,10 @@
       .then((response) => (response.ok ? response.json() : Promise.reject(new Error("bad response"))))
       .then((entries) => {
         writeCatalogCache(entries);
-        if (JSON.stringify(entries) !== JSON.stringify(cachedEntries)) renderMarinosMenu(entries);
+        if (JSON.stringify(entries) !== JSON.stringify(cachedEntries)) {
+          renderMarinosMenu(entries);
+          renderOwnStatusBadge(entries);
+        }
       })
       .catch(() => {
         // Leave whatever's already rendered (cache or static banner links) as-is.
@@ -1294,6 +1530,157 @@
 
     new MutationObserver(() => {
       if (!section.hidden) loadSecurity();
+    }).observe(section, { attributes: true, attributeFilter: ["hidden"] });
+  });
+
+  // Builds an accessibility score gauge (see .app-score in app-brand.css) for
+  // an integer 0-100 Lighthouse score: a ring, the number, and the band word.
+  // Bands match Lighthouse's own. Exposed as window.marinScoreGauge so other
+  // scripts (marin-os's score table) draw the identical component.
+  function marinScoreGauge(score, { large = false } = {}) {
+    const value = Math.max(0, Math.min(100, Math.round(Number(score))));
+    const band = value >= 90 ? "good" : value >= 50 ? "needs-improvement" : "poor";
+    const label = { good: "Good", "needs-improvement": "Needs improvement", poor: "Poor" }[band];
+    const SVG = "http://www.w3.org/2000/svg";
+    const svgEl = (name, attrs) => {
+      const el = document.createElementNS(SVG, name);
+      Object.entries(attrs).forEach(([key, val]) => el.setAttribute(key, val));
+      return el;
+    };
+
+    const wrapper = document.createElement("span");
+    wrapper.className = `app-score${large ? " app-score--large" : ""}`;
+    wrapper.dataset.band = band;
+
+    // r = 100 / (2 * PI), so the circumference is exactly 100 and the arc's
+    // dash length is simply the score.
+    const ring = svgEl("svg", { class: "app-score__ring", viewBox: "0 0 36 36", "aria-hidden": "true", focusable: "false" });
+    ring.append(
+      svgEl("circle", { class: "app-score__track", cx: 18, cy: 18, r: 15.9155 }),
+      svgEl("circle", {
+        class: "app-score__arc",
+        cx: 18,
+        cy: 18,
+        r: 15.9155,
+        transform: "rotate(-90 18 18)",
+        "stroke-dasharray": `${value} 100`,
+      })
+    );
+    const number = svgEl("text", { class: "app-score__number", x: 18, y: 18 });
+    number.textContent = String(value);
+    ring.append(number);
+
+    const text = document.createElement("span");
+    text.className = "app-score__label";
+    const hidden = document.createElement("span");
+    hidden.className = "visually-hidden";
+    hidden.textContent = `Accessibility score ${value} out of 100: `;
+    text.append(hidden, document.createTextNode(label));
+
+    wrapper.append(ring, text);
+    return wrapper;
+  }
+  window.marinScoreGauge = marinScoreGauge;
+
+  // Accessibility: any [data-accessibility-scores] section lazy-loads the
+  // shared MarinOS Lighthouse results the first time it becomes visible and
+  // shows this app's own entry. Automated testing only — never labelled as
+  // WCAG conformance. A failed scan is not shown as a low score: the last good
+  // result stays visible with its date, or "not available" if there is none.
+  document.querySelectorAll("[data-accessibility-scores]").forEach((section) => {
+    const status = section.querySelector("[data-accessibility-status]");
+    const content = section.querySelector("[data-accessibility-content]");
+    if (!status || !content) return;
+
+    const STALE_AFTER_DAYS = 14;
+    const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    const scoresUrl = isLocal ? "http://localhost:8935/data/lighthouse.json" : LIGHTHOUSE_URL;
+    let loaded = false;
+
+    function formatDate(iso) {
+      const date = new Date(iso);
+      return Number.isNaN(date.getTime())
+        ? ""
+        : date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    }
+
+    async function resolveAppId() {
+      const header = document.querySelector("marin-app-header");
+      const direct =
+        section.dataset.accessibilityAppId ||
+        (header ? normalizedAttribute(header, "app-id") : "") ||
+        document.body.dataset.appId ||
+        "";
+      if (direct) return direct;
+      const response = await fetch(CATALOG_URL);
+      if (!response.ok) throw new Error(`catalog fetch failed: ${response.status}`);
+      const current = window.location.href;
+      const match = (await response.json()).find((entry) => {
+        const href = safeLinkUrl(entry?.url);
+        return href && current.startsWith(href);
+      });
+      return match ? match.id : "";
+    }
+
+    function show(entry) {
+      const good =
+        entry && entry.status === "success"
+          ? { score: entry.score, testedAt: entry.testedAt }
+          : (entry && entry.lastSuccess) || null;
+      content.replaceChildren();
+      if (!good) {
+        status.textContent = "An accessibility score isn't available for this application yet.";
+        return;
+      }
+      const scoreLine = document.createElement("p");
+      scoreLine.append(marinScoreGauge(good.score, { large: true }));
+      const source = document.createElement("p");
+      source.className = "app-help-text";
+      const notes = [];
+      if (entry.status !== "success") notes.push("The latest scan didn't finish, so this is the last successful result.");
+      else if (Date.now() - new Date(good.testedAt).getTime() > STALE_AFTER_DAYS * 86400000) notes.push("This result is out of date.");
+      source.textContent = ["Google Lighthouse", `Tested ${formatDate(good.testedAt)}`, ...notes].join(". ") + (notes.length ? "" : ".");
+      content.append(scoreLine, source);
+      // The same test, run live: PageSpeed Insights' own results page for the
+      // tested address (mobile, matching how the stored score was produced).
+      const tested = entry.url;
+      if (tested) {
+        const report = document.createElement("p");
+        const link = document.createElement("a");
+        link.href = `https://pagespeed.web.dev/analysis?url=${encodeURIComponent(tested)}&form_factor=mobile`;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        link.textContent = "Lighthouse results";
+        report.append(link);
+        content.append(report);
+      }
+      status.textContent = "";
+    }
+
+    async function loadScore() {
+      if (loaded) return;
+      status.textContent = "Loading accessibility score...";
+      try {
+        const [appId, response] = await Promise.all([resolveAppId(), fetch(scoresUrl, { cache: "no-store" })]);
+        loaded = true;
+        if (response.status === 404) {
+          status.textContent = "Accessibility scores haven't been collected yet.";
+          return;
+        }
+        if (!response.ok) throw new Error(`scores fetch failed: ${response.status}`);
+        const data = await response.json();
+        show(appId && data && data.apps ? data.apps[appId] : null);
+      } catch (error) {
+        loaded = true;
+        console.error(error);
+        status.textContent = "Couldn't load the accessibility score right now.";
+      }
+    }
+
+    if (!section.hidden) loadScore();
+
+    new MutationObserver(() => {
+      if (!section.hidden) loadScore();
     }).observe(section, { attributes: true, attributeFilter: ["hidden"] });
   });
 

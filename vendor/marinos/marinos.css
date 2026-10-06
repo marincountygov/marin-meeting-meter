@@ -40,7 +40,7 @@
   --app-danger-text: #7f2d20;
   --app-table-row-hover: #e6f2fb;
   --app-max-width: 1280px;
-  --docs-max-width: 1180px;
+  --docs-max-width: var(--app-max-width);
 
   --app-brand: var(--marin-black);
   --app-accent: var(--marin-blue);
@@ -142,6 +142,24 @@
     --pico-primary: #8fcaff;
     --pico-primary-hover: #b9dcff;
     --pico-primary-focus: rgba(143, 202, 255, 0.35);
+  }
+
+  /* alpha: raw --app-warning (marin-gold, #e5b53b) is unchanged between
+     themes and only reads at AA contrast on a dark background — the
+     light-mode rule above darkens it procedurally instead, since it needs
+     the opposite treatment in light mode. beta: --app-accent *does* get a
+     proper dark-mode value (#8fcaff) that already clears AA as plain text
+     color, so it reverts to the raw token too rather than carrying over
+     light mode's darkening (which would otherwise make it needlessly
+     muddier against a dark background). live needs no override at all —
+     its light-mode rule already uses the raw --app-success token directly,
+     so it was dark-mode-correct from the start. */
+  .app-status[data-status="alpha"] {
+    color: var(--app-warning);
+  }
+
+  .app-status[data-status="beta"] {
+    color: var(--app-accent);
   }
 }
 
@@ -282,6 +300,23 @@ input[type="radio"] {
   height: 100%;
 }
 
+/* .menu-panel a is already display:flex (shared/app-brand.css above) — name
+   takes the available space so a short or long app name doesn't push the
+   badge to an inconsistent spot, and the badge (further below, where
+   .app-status itself is sized) sits flush right via margin-left: auto. */
+.marinos-menu__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marinos-menu__status {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
 .marinos-menu__all {
   margin-top: 0.25rem;
   padding-top: 0.6rem;
@@ -302,6 +337,11 @@ input[type="radio"] {
   height: 100%;
 }
 
+/* Was a plain <sup>ALPHA</sup> (styles below kept in case any consumer
+   hasn't swapped its markup over to .marinos-banner__status yet) — now the
+   same real .app-status badge component every other status display uses,
+   so "the MarinOS banner/menu itself is Alpha" reads the same way as any
+   app's own status rather than looking like a different, one-off thing. */
 .marinos-banner sup {
   margin-left: 0.35em;
   font-size: 0.6em;
@@ -309,6 +349,11 @@ input[type="radio"] {
   letter-spacing: 0.04em;
   vertical-align: super;
   opacity: 0.85;
+}
+
+.marinos-banner__status {
+  margin-left: 0.5rem;
+  vertical-align: middle;
 }
 
 .menu {
@@ -416,6 +461,22 @@ a.app-title-row {
   text-decoration: none;
 }
 
+/* .app-title-row is a plain <div> where only the app name itself links
+   (see that markup's own comment) — this keeps that one link looking like
+   plain heading text, same as a.app-title-row above did when the link
+   wrapped the whole row. Scoped to its own class (not a bare ".app-title a"
+   rule) specifically so it can't also catch .app-title__status right next
+   to it and override that badge's own color. */
+.app-title__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.app-title__link:hover,
+.app-title__link:focus-visible {
+  text-decoration: underline;
+}
+
 .app-icon,
 .app-card__icon {
   display: inline-flex;
@@ -461,6 +522,15 @@ a.app-title-row {
   margin: 0;
   font-size: clamp(1.35rem, 2vw, 1.75rem);
   line-height: 1.2;
+}
+
+/* The app's own status badge, appended after its name in .app-title (see
+   shared/app-shell.js's renderOwnStatusBadge()) — .app-status's own
+   font-size is fixed regardless of the heading it sits in, so it needs its
+   own vertical alignment here rather than just inheriting the h1's. */
+.app-title__status {
+  vertical-align: middle;
+  margin-left: 0.5rem;
 }
 
 .app-subtitle {
@@ -565,6 +635,11 @@ a.app-title-row {
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
+  /* A plain <span> never had a decoration to begin with — this only
+     matters for the status badges that are now a real <a> (linking to
+     MarinOS's #status page), so clicking one doesn't pick up the browser's
+     default link underline on top of this component's own pill styling. */
+  text-decoration: none;
 }
 
 .app-badge {
@@ -593,6 +668,30 @@ a.app-title-row {
 .app-status[data-status="danger"] {
   background: #fbecea;
   color: #7f2d20;
+}
+
+/* MarinOS app status (alpha/beta/live) — see marin-os's #status page for what
+   each means. Token-driven (not hardcoded hex like the rules above) so this
+   set is the first .app-status variant that's actually dark-mode-aware.
+   Contrast checked numerically against both themes' real token values
+   (WCAG relative-luminance formula) rather than eyeballed — light mode
+   needs its own darkened text for alpha/beta (raw --app-warning/--app-accent
+   at these background tints land at 4.3:1/3.8:1, short of AA's 4.5:1); see
+   the dark-mode override block further down, where both revert to the raw
+   token, since dark mode's own values already clear AA as plain text color. */
+.app-status[data-status="alpha"] {
+  background: color-mix(in srgb, var(--app-warning) 20%, var(--app-surface));
+  color: color-mix(in srgb, var(--app-warning) 45%, black); /* ~6.7:1 on the line above */
+}
+
+.app-status[data-status="beta"] {
+  background: color-mix(in srgb, var(--app-accent) 14%, var(--app-surface));
+  color: color-mix(in srgb, var(--app-accent) 85%, black); /* ~5:1 on the line above */
+}
+
+.app-status[data-status="live"] {
+  background: color-mix(in srgb, var(--app-success) 18%, var(--app-surface));
+  color: var(--app-success);
 }
 
 .app-empty {
@@ -783,19 +882,56 @@ th[aria-sort="descending"] .sort-button::after {
 .app-footer__inner {
   max-width: var(--app-max-width);
   margin: 0 auto;
-  padding: 1.25rem 1rem;
+  padding: 1rem;
   font-family: var(--app-font-heading);
-  font-weight: 600;
 }
 
-.app-footer__inner a {
+.app-footer__local {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 2rem;
+  font-weight: 400;
+}
+
+.app-footer__app-name {
+  flex: 0 0 auto;
+  font-weight: 400;
+}
+
+.app-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 2rem;
+  margin: 0;
+}
+
+.app-footer__nav a,
+.app-footer__platform a {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
   color: inherit;
   text-decoration: none;
 }
 
-.app-footer__inner a:hover {
+.app-footer__nav a {
+  font-weight: 400;
+}
+
+.app-footer__nav a:hover,
+.app-footer__platform a:hover {
   color: var(--app-accent);
   text-decoration: underline;
+}
+
+.app-footer__platform {
+  margin-top: 0.125rem;
+}
+
+.app-footer__platform a {
+  font-weight: 600;
 }
 
 .app-feedback {
@@ -1274,6 +1410,20 @@ th[aria-sort="descending"] .sort-button::after {
 }
 
 @media (max-width: 720px) {
+  .app-footer__local {
+    align-items: flex-start;
+    gap: 0 1.25rem;
+  }
+
+  .app-footer__app-name {
+    flex-basis: 100%;
+    padding-top: 0.5rem;
+  }
+
+  .app-footer__nav {
+    gap: 0 1.25rem;
+  }
+
   .app-header__inner {
     align-items: stretch;
     flex-direction: column;
@@ -1421,7 +1571,7 @@ th[aria-sort="descending"] .sort-button::after {
   }
 }
 
-/* Reviewed corrections to the pinned Marin UI 1.18.0 snapshot.
+/* Reviewed corrections to the pinned Marin UI 1.19.0 input.
    Remove these only after a reviewed upstream update includes equivalent fixes.
    SVG paint/stroke declarations are removed by build.py's strict adapter so
    canonical SVG attributes, not CSS, control their appearance. */
@@ -1458,6 +1608,14 @@ th[aria-sort="descending"] .sort-button::after {
   stroke-width: 2;
 }
 
+/* CSS-only fallback for app-owned icons inserted after shell initialization.
+   Use the canonical viewBox spelling here, or author an explicit stroke-width
+   in late-inserted SVGs. Never override an explicit width, including 2 or 0. */
+:is(.app-icon, .app-card__icon, .docs-brand-icon, .copy-button, .marinos-menu__icon, .marinos-banner__icon) svg[viewBox="0 0 48 48"]:not([stroke-width]),
+.menu-toggle__caret[viewBox="0 0 48 48"]:not([stroke-width]) {
+  stroke-width: 4;
+}
+
 :is(.app-icon, .app-card__icon, .docs-brand-icon, .copy-button, .marinos-menu__icon, .marinos-banner__icon) svg:not([stroke-linecap]),
 .menu-toggle__caret:not([stroke-linecap]) {
   stroke-linecap: round;
@@ -1468,7 +1626,7 @@ th[aria-sort="descending"] .sort-button::after {
   stroke-linejoin: round;
 }
 
-/* Marin App Shell 1.1.1: component integration only.
+/* Marin App Shell 1.5.0: component integration only.
    General visual rules come from the locked, unmodified Marin UI input. */
 marin-os-banner,
 marin-app-header,
@@ -1498,18 +1656,6 @@ main#main {
 
 marin-app-footer {
   margin-top: auto;
-}
-
-/* The anchor itself is the flex row; do not add a nested title-row wrapper. */
-.app-identity__home {
-  color: inherit;
-  text-decoration: none;
-}
-
-.app-identity__home:hover,
-.app-identity__home:focus-visible {
-  color: inherit;
-  text-decoration: none;
 }
 
 .app-footer {
@@ -1591,4 +1737,105 @@ marin-app-footer {
   .app-nav[data-open] {
     display: flex;
   }
+}
+
+/* App Shell 1.2.2 compatibility override. Marin UI 1.19.0 uses gold text on
+   a tinted dark surface for Alpha. Use the County-approved black-on-gold
+   pairing here until the shared UI baseline adopts the same treatment. */
+@media (prefers-color-scheme: dark) {
+  .app-status[data-status="alpha"] {
+    background: var(--app-warning);
+    color: var(--marin-black);
+  }
+}
+
+/* App Shell 1.4.0 compatibility addition. The accessibility score gauge
+   (.app-score) is defined in Marin UI 1.21.0; the shell stays pinned to Marin
+   UI 1.19.0, so it carries these rules itself until the pinned baseline is
+   refreshed. Keep in step with marin-ui's shared/app-brand.css. */
+:root {
+  --app-score-good: #1a7f37;
+  --app-score-needs-improvement: #a85a00;
+  --app-score-poor: #c62828;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --app-score-good: #5cd68a;
+    --app-score-needs-improvement: #ffb454;
+    --app-score-poor: #ff8a80;
+  }
+}
+
+/* Accessibility score gauge (Google Lighthouse accessibility, 0-100) —
+   a ring whose arc length is the score, with the number inside and the band
+   word beside it. Color is never the only signal: the number and the band word
+   are always printed, and the ring itself is decorative (aria-hidden), with the
+   same information in visually hidden text. Bands match Lighthouse's own:
+   good 90-100, needs-improvement 50-89, poor 0-49. Build one with
+   marinScoreGauge(score) from shared/app-shell.js. A score is automated
+   testing only, not WCAG conformance. */
+.app-score {
+  --app-score-color: var(--app-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  vertical-align: middle;
+}
+
+.app-score[data-band="good"] { --app-score-color: var(--app-score-good); }
+.app-score[data-band="needs-improvement"] { --app-score-color: var(--app-score-needs-improvement); }
+.app-score[data-band="poor"] { --app-score-color: var(--app-score-poor); }
+
+.app-score__ring {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+}
+
+.app-score__track {
+  fill: none;
+  stroke: var(--app-border);
+  stroke-width: 3.5;
+}
+
+.app-score__arc {
+  fill: none;
+  stroke: var(--app-score-color);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.app-score__number {
+  fill: var(--app-text);
+  font-family: var(--app-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.app-score__label {
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.app-score--large {
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.app-score--large .app-score__ring {
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.app-score--large .app-score__number {
+  font-size: 12px;
+}
+
+@media (forced-colors: active) {
+  .app-score__track { stroke: GrayText; }
+  .app-score__arc { stroke: Highlight; }
+  .app-score__number { fill: CanvasText; }
 }

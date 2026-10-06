@@ -1,10 +1,9 @@
 {
   "schema": 1,
-  "marinUiVersion": "1.18.0",
+  "marinUiVersion": "1.19.0",
   "upstream": "https://github.com/marincountygov/marin-ui",
   "provenance": {
-    "source": "User-supplied marin-mentions-main (1).zip, Marin UI 1.18.0 consumer snapshot",
-    "note": "The CSS and Lucide inputs are preserved byte-for-byte from the supplied consumer. No claim that this is the current upstream main. Review sync-ui.sh changes explicitly.",
+    "source": "Explicitly imported local marin-ui checkout",
     "gitCommit": null
   },
   "files": {
@@ -35,8 +34,8 @@
     },
     "vendor/marin-ui/app-brand.css": {
       "source": "shared/app-brand.css",
-      "bytes": 26047,
-      "sha256": "f27d2605d20c194f42921e1baa69fc71500b36abfc39413f69ec1e207eadb304"
+      "bytes": 31092,
+      "sha256": "c9767b228380e008c28e693420165debf26f36fd6c0ca9cc116754832572d7ee"
     },
     "vendor/pico.min.css": {
       "source": "vendor/pico.min.css",

@@ -1,6 +1,6 @@
-# Marin App Shell 1.1.1
+# Marin App Shell 1.5.0
 
-Pinned Marin UI baseline: 1.18.0.
+Pinned Marin UI baseline: 1.19.0.
 
 This directory is generated. Do not edit files inside an application. Load
 `marinos.css` before app CSS and deferred `marinos.js` before app JavaScript.
@@ -34,4 +34,4 @@ geometry, so icon rendering requires no extra runtime request.
 
 `manifest.json` records release/file hashes and managed companion assets.
 `brand-source.json` records the reviewed input provenance. Set the app's
-`platform.shell` to `1.1.1` and validate before publishing.
+`platform.shell` to `1.5.0` and validate before publishing.
