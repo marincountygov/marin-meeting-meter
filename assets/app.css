@@ -543,47 +543,6 @@ body.meeting-idle .meeting-summary-card {
   border-top: 1px solid var(--app-border);
 }
 
-.meeting-drop-overlay {
-  position: fixed;
-  z-index: 1000;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  background: color-mix(in srgb, var(--app-surface) 84%, transparent);
-  backdrop-filter: blur(2px);
-  pointer-events: none;
-}
-
-.meeting-drop-overlay[hidden] {
-  display: none;
-}
-
-.meeting-drop-overlay__panel {
-  display: grid;
-  gap: 0.35rem;
-  width: min(34rem, 100%);
-  padding: 2rem;
-  border: 0.2rem dashed var(--app-accent);
-  border-radius: calc(var(--pico-border-radius) * 2);
-  background: var(--app-surface);
-  box-shadow: 0 1rem 2.5rem rgba(16, 24, 40, 0.2);
-  text-align: center;
-}
-
-.meeting-drop-overlay__panel strong {
-  font-family: var(--app-font-heading);
-  font-size: 1.35rem;
-}
-
-.meeting-drop-overlay__panel span {
-  color: var(--app-muted);
-}
-
-body.meeting-file-drag-active {
-  cursor: copy;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .meeting-idle-fade-target,
   .meeting-summary-card {

@@ -24,11 +24,11 @@
     "deliveryMechanism": "meta",
     "directives": {
       "default-src": ["'self'"],
-      "script-src": ["'self'"],
+      "script-src": ["'self'", "https://l.marinhhs.org"],
       "style-src": ["'self'"],
       "img-src": ["'self'", "data:"],
       "font-src": ["'self'"],
-      "connect-src": ["'self'", "https://marincountygov.github.io/marin-os/catalog.json", "https://api.github.com", "https://data.marincounty.gov"],
+      "connect-src": ["'self'", "https://marincountygov.github.io/marin-os/catalog.json", "https://api.github.com", "https://data.marincounty.gov", "https://l.marinhhs.org"],
       "object-src": ["'none'"],
       "base-uri": ["'self'"],
       "form-action": ["'self'"]
@@ -44,7 +44,8 @@
     "externalDataSources": [
       "https://marincountygov.github.io/marin-os/catalog.json",
       "https://api.github.com",
-      "https://data.marincounty.gov/resource/w7uw-fvda.json"
+      "https://data.marincounty.gov/resource/w7uw-fvda.json",
+      "https://l.marinhhs.org/s/assets/pageview.js"
     ]
   },
   "dependencies": {

@@ -2,6 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <!-- BEGIN generated security meta: python3 scripts/sync-security-meta.py --write -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://l.marinhhs.org; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://marincountygov.github.io/marin-os/catalog.json https://api.github.com https://data.marincounty.gov https://l.marinhhs.org; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <!-- END generated security meta -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Meeting Meter | County of Marin</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='10' fill='%23000'/%3E%3Cg fill='none' stroke='%23e5b53b' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='24' cy='27' r='14'/%3E%3Cpath d='M24 19v8l6 4M18 7h12M24 7v6M36 14l3 3'/%3E%3C/g%3E%3C/svg%3E">
@@ -12,6 +16,12 @@
     <script src="assets/app.js" defer></script>
   </head>
   <body>
+    <noscript>
+      <div class="container app-alert app-alert--warning">
+        JavaScript is required to display the MarinOS interface and use this application.
+      </div>
+    </noscript>
+
     <marin-os-banner></marin-os-banner>
     <marin-app-header
       app-name="Meeting Meter"
@@ -22,15 +32,13 @@
       </template>
     </marin-app-header>
     <main id="main" class="container app-main" tabindex="-1">
-      <div id="app-status-message" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
-
       <section id="start" class="meeting-cost-app" data-tab-section="start">
 
-        <div id="meeting-load-state" class="app-alert app-alert--info" role="status" aria-live="polite">Loading job classes and hourly pay rates...</div>
+        <div id="meeting-load-state" class="app-alert app-alert--info" role="status" aria-live="polite">Loading Meeting Meter…</div>
         <div id="meeting-error-state" class="app-alert app-alert--danger" hidden>
           <h3>Unable to load meeting cost data</h3>
           <p>The calculator could not reach the County Open Data JSON feed. Check the network connection or try again.</p>
-          <button type="button" id="meeting-retry-load">Retry</button>
+          <button type="button" id="meeting-retry-load" class="action-button" data-icon="refresh-cw">Retry</button>
         </div>
 
         <div id="meeting-calculator" hidden>
@@ -70,10 +78,10 @@
                     <span id="meeting-timer-status" class="meeting-timer-status">Not started</span>
                   </div>
                   <div class="meeting-timer-actions" aria-label="Live timer controls">
-                    <button type="button" id="meeting-timer-start">Start</button>
-                    <button type="button" id="meeting-timer-pause" class="secondary" hidden>Pause</button>
-                    <button type="button" id="meeting-timer-resume" hidden>Resume</button>
-                    <button type="button" id="meeting-timer-reset" class="secondary">Reset timer</button>
+                    <button type="button" id="meeting-timer-start" class="primary">Start</button>
+                    <button type="button" id="meeting-timer-pause" class="action-button" hidden>Pause</button>
+                    <button type="button" id="meeting-timer-resume" class="primary" hidden>Resume</button>
+                    <button type="button" id="meeting-timer-reset" class="action-button" data-icon="rotate-ccw">Reset timer</button>
                   </div>
                   <p class="app-help-text">The timer uses elapsed clock time, so the estimate remains accurate if the browser slows background updates.</p>
                 </div>
@@ -94,9 +102,9 @@
 
               <div class="meeting-file-controls">
                 <div class="meeting-file-actions" aria-label="Meeting file actions">
-                  <button type="button" id="import-meeting-button" class="secondary">Import meeting</button>
-                  <input id="import-meeting-file" type="file" accept=".json,application/json" hidden>
-                  <button type="button" id="export-meeting-button" class="secondary" hidden>Export meeting</button>
+                  <button type="button" id="import-meeting-button" class="action-button" data-icon="upload">Import meeting</button>
+                  <input id="import-meeting-file" class="visually-hidden" type="file" accept=".json,application/json" aria-label="Import a meeting file">
+                  <button type="button" id="export-meeting-button" class="action-button" data-icon="download" hidden>Export meeting</button>
                 </div>
                 <p id="meeting-file-status" class="app-help-text meeting-file-status" role="status" aria-live="polite" aria-atomic="true" hidden></p>
               </div>
@@ -146,7 +154,7 @@
                     <h3 id="meeting-participants-heading">Participants</h3>
                     <p class="app-help-text">Add County personnel by classification and pay step, or add non-personnel such as contractors.</p>
                   </div>
-                  <button type="button" id="add-non-personnel-group" class="secondary">Add non-personnel group</button>
+                  <button type="button" id="add-non-personnel-group" class="action-button" data-icon="plus">Add non-personnel group</button>
                 </div>
                 <div id="meeting-participant-list" class="meeting-participant-list" aria-label="Meeting participant groups"></div>
               </section>
@@ -167,13 +175,13 @@
                   <div><dt>Non-personnel cost</dt><dd id="meeting-non-personnel-cost">$0.00</dd></div>
                   <div class="meeting-total-summary"><dt>Estimated total meeting cost</dt><dd id="meeting-total-cost">$0.00</dd></div>
                 </dl>
-                <button type="button" id="copy-meeting-summary" class="meeting-copy-button" disabled>Copy summary</button>
+                <button type="button" id="copy-meeting-summary" class="action-button meeting-copy-button" data-icon="copy" disabled>Copy summary</button>
                 <p id="meeting-copy-status" class="app-help-text meeting-copy-status" role="status" aria-live="polite" aria-atomic="true"></p>
                 <p class="app-help-text meeting-summary-note">This estimate uses published hourly salary rates for County personnel and manually entered hourly rates for non-personnel. It does not represent budget savings that would automatically result from canceling a meeting.</p>
               </section>
             </aside>
 
-            <button type="button" id="reset-meeting-calculator" class="secondary meeting-reset-calculator">Reset calculator</button>
+            <button type="button" id="reset-meeting-calculator" class="action-button meeting-reset-calculator" data-icon="rotate-ccw">Reset calculator</button>
           </div>
         </div>
       </section>
@@ -215,14 +223,12 @@
           <h3>Privacy and storage</h3>
           <p>The app does not collect employee or contractor names. Calculator entries stay in the current browser session and are not saved to local storage. Exported meeting files are created only when a user chooses Export meeting and remain on that user's device unless the user shares them. Imported files are read locally in the browser and are not uploaded to a server. The browser may keep a short-lived cache of the public job-class dataset so the app can load more quickly.</p>
         </template>
+        <template data-accessibility>
+          <p>Meeting Meter aims to meet WCAG 2.2 AA. Every field is a standard form control with a label, and totals are announced as they change.</p>
+          <p>A formal accessibility review has not been completed yet. If you find a problem, use the Feedback button or contact the County's innovation team.</p>
+        </template>
       </marin-app-info>
     </main>
-    <div id="meeting-drop-overlay" class="meeting-drop-overlay" hidden aria-hidden="true">
-      <div class="meeting-drop-overlay__panel">
-        <strong>Drop meeting file to import</strong>
-        <span>Use a JSON file exported by Meeting Meter.</span>
-      </div>
-    </div>
     <marin-app-footer app-name="Meeting Meter"></marin-app-footer>
     <marin-app-feedback></marin-app-feedback>
   <script defer src="https://l.marinhhs.org/s/assets/pageview.js" data-site="marin-os" referrerpolicy="no-referrer">

@@ -26,7 +26,6 @@
   let nextMeetingGroupId = 1;
   let meetingTimerIntervalId = null;
   let meetingIdleTimeoutId = null;
-  let meetingDragDepth = 0;
   let meetingIdleTargets = [];
   const meetingIdleInertState = new Map();
   let isRenderingMeetingParticipants = false;
@@ -89,7 +88,6 @@
     importMeetingFile: document.querySelector("#import-meeting-file"),
     exportMeetingButton: document.querySelector("#export-meeting-button"),
     meetingFileStatus: document.querySelector("#meeting-file-status"),
-    meetingDropOverlay: document.querySelector("#meeting-drop-overlay"),
     simpleAttendees: document.querySelector("#simple-attendees"),
     simpleDistributionSlider: document.querySelector("#simple-distribution-slider"),
     simpleBlendedRate: document.querySelector("#simple-blended-rate"),
@@ -663,7 +661,7 @@
       <article class="meeting-participant-group" data-meeting-group="${escapeAttr(group.id)}">
         <div class="meeting-participant-group__header">
           <h4>${escapeHtml(heading)}</h4>
-          <button type="button" class="secondary meeting-remove-group" data-action="remove-meeting-group" data-group-id="${escapeAttr(group.id)}" ${canRemove ? "" : "disabled"} aria-label="Remove ${escapeAttr(heading.toLocaleLowerCase())}">Remove</button>
+          <button type="button" class="action-button is-danger meeting-remove-group" data-icon="trash" data-action="remove-meeting-group" data-group-id="${escapeAttr(group.id)}" ${canRemove ? "" : "disabled"} aria-label="Remove ${escapeAttr(heading.toLocaleLowerCase())}">Remove</button>
         </div>
         <div class="meeting-participant-fields">
           <div class="meeting-participant-field meeting-participant-field--classification">
@@ -717,7 +715,7 @@
       <article class="meeting-participant-group meeting-participant-group--non-personnel" data-meeting-group="${escapeAttr(group.id)}" data-meeting-group-type="non-personnel">
         <div class="meeting-participant-group__header">
           <h4>${escapeHtml(heading)}</h4>
-          <button type="button" class="secondary meeting-remove-group" data-action="remove-meeting-group" data-group-id="${escapeAttr(group.id)}" aria-label="Remove ${escapeAttr(heading.toLocaleLowerCase())}">Remove</button>
+          <button type="button" class="action-button is-danger meeting-remove-group" data-icon="trash" data-action="remove-meeting-group" data-group-id="${escapeAttr(group.id)}" aria-label="Remove ${escapeAttr(heading.toLocaleLowerCase())}">Remove</button>
         </div>
         <div class="meeting-participant-fields meeting-participant-fields--non-personnel">
           <div class="meeting-participant-field meeting-participant-field--classification">
@@ -1422,17 +1420,7 @@
   function exportMeetingFile() {
     const payload = buildMeetingExportPayload();
     const filename = meetingExportFileName();
-    const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], {
-      type: "application/json"
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.append(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    marinDownload({ content: `${JSON.stringify(payload, null, 2)}\n`, name: filename });
 
     const count = payload.meeting.participants.length;
     const groupLabel = count === 1 ? "participant group" : "participant groups";
@@ -1666,7 +1654,7 @@
 
       let payload;
       try {
-        const source = (await file.text()).replace(/^\uFEFF/, "");
+        const source = (await marinReadText(file)).text.replace(/^\uFEFF/, "");
         payload = JSON.parse(source);
       } catch {
         throw new Error("The selected file is not valid JSON.");
@@ -1692,99 +1680,16 @@
     }
   }
 
-  function fileDragContainsFiles(event) {
-    return Array.from(event.dataTransfer?.types || []).includes("Files");
-  }
-
-  function showMeetingDropOverlay() {
-    if (el.meetingDropOverlay) {
-      el.meetingDropOverlay.hidden = false;
-      el.meetingDropOverlay.setAttribute("aria-hidden", "false");
-    }
-    document.body.classList.add("meeting-file-drag-active");
-    stopMeetingIdleMode();
-  }
-
-  function hideMeetingDropOverlay({ resumeIdle = true } = {}) {
-    meetingDragDepth = 0;
-    if (el.meetingDropOverlay) {
-      el.meetingDropOverlay.hidden = true;
-      el.meetingDropOverlay.setAttribute("aria-hidden", "true");
-    }
-    document.body.classList.remove("meeting-file-drag-active");
-    if (resumeIdle) noteMeetingActivity();
-  }
-
   function bindMeetingFileEvents() {
-    el.importMeetingButton?.addEventListener("click", () => {
-      if (!el.importMeetingFile) return;
-      el.importMeetingFile.value = "";
-      el.importMeetingFile.click();
-    });
-    el.importMeetingFile?.addEventListener("change", async (event) => {
-      const file = event.target.files?.[0] || null;
-      await importMeetingFile(file);
-      event.target.value = "";
+    marinUpload({
+      button: el.importMeetingButton,
+      input: el.importMeetingFile,
+      accept: [".json"],
+      maxBytes: MEETING_IMPORT_MAX_BYTES,
+      onFile: importMeetingFile,
+      onMessage: (message) => setMeetingFileStatus(message, true)
     });
     el.exportMeetingButton?.addEventListener("click", exportMeetingFile);
-
-    document.addEventListener("dragenter", (event) => {
-      if (!fileDragContainsFiles(event)) return;
-      event.preventDefault();
-      meetingDragDepth += 1;
-      showMeetingDropOverlay();
-    });
-    document.addEventListener("dragover", (event) => {
-      if (!fileDragContainsFiles(event)) return;
-      event.preventDefault();
-      if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
-      showMeetingDropOverlay();
-    });
-    document.addEventListener("dragleave", (event) => {
-      if (!meetingDragDepth) return;
-      event.preventDefault();
-      meetingDragDepth = Math.max(0, meetingDragDepth - 1);
-      if (!meetingDragDepth) hideMeetingDropOverlay();
-    });
-    document.addEventListener("drop", async (event) => {
-      if (!fileDragContainsFiles(event) && !meetingDragDepth) return;
-      event.preventDefault();
-      const files = Array.from(event.dataTransfer?.files || []);
-      hideMeetingDropOverlay({ resumeIdle: false });
-      if (files.length !== 1) {
-        if (window.location.hash !== "#start") window.location.hash = "#start";
-        const message = "Drop one meeting JSON file at a time.";
-        setMeetingFileStatus(`Import failed: ${message}`, true);
-        setLiveStatus(`Meeting import failed. ${message}`);
-        return;
-      }
-      await importMeetingFile(files[0]);
-    });
-    window.addEventListener("blur", () => {
-      if (meetingDragDepth) hideMeetingDropOverlay();
-    });
-  }
-
-  async function writeClipboardText(text) {
-    if (navigator.clipboard?.writeText) {
-      try {
-        await navigator.clipboard.writeText(text);
-        return;
-      } catch {
-        /* Use the fallback when Clipboard API access is unavailable. */
-      }
-    }
-
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.setAttribute("readonly", "");
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
-    document.body.append(textarea);
-    textarea.select();
-    const copied = document.execCommand("copy");
-    textarea.remove();
-    if (!copied) throw new Error("Copy command was not available");
   }
 
   async function copyMeetingEstimate() {
@@ -1792,7 +1697,7 @@
     if (!totals.groups.length) return;
 
     try {
-      await writeClipboardText(buildMeetingSummaryText());
+      if (!(await marinCopyText(buildMeetingSummaryText()))) throw new Error("Copy was not available");
       if (el.meetingCopyStatus) {
         el.meetingCopyStatus.textContent = "Summary copied to the clipboard.";
       }
