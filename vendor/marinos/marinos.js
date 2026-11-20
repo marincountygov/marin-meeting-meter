@@ -6,14 +6,17 @@
     return;
   }
 
-  const SHELL_VERSION = "1.5.0";
-  const MARIN_UI_VERSION = "1.19.0";
+  const SHELL_VERSION = "1.25.1";
+  const MARIN_UI_VERSION = "1.35.1";
   const MARINOS_URL = "https://marincountygov.github.io/marin-os/";
   const MARINOS_STATUS_URL = `${MARINOS_URL}#status`;
   const CATALOG_URL = `${MARINOS_URL}catalog.json`;
   // Google Lighthouse accessibility results for every MarinOS app, written
   // by marin-os's scripts/lighthouse.js. One shared file, keyed by catalog id.
   const LIGHTHOUSE_URL = `${MARINOS_URL}data/lighthouse.json`;
+  // Languages, dependencies, bundled components and declared AI use for every
+  // MarinOS app, written by marin-os's scripts/tech.js. SBOM files sit beside it.
+  const TECH_URL = `${MARINOS_URL}data/tech.json`;
   const WCAG_URL = "https://www.w3.org/TR/WCAG22/";
   const FEEDBACK_URL = "https://form.asana.com/?k=qVUT83d5DBmlDiIyi-WAyQ&d=23133298259496";
   const SECURITY_STANDARD_URL =
@@ -23,12 +26,13 @@
     about: "About",
     security: "Security",
     accessibility: "Accessibility",
+    tech: "Tech",
     updates: "Updates",
   });
   const MARINOS_STATUS_LABELS = Object.freeze({ alpha: "Alpha", beta: "Beta", live: "Live" });
 
   // Generated from the hash-locked vendor/icons/lucide/*.svg at build time.
-  const LUCIDE_ICONS = Object.freeze({"check": "<path d=\"M20 6 9 17l-5-5\"/>", "chevron-down": "<path d=\"m6 9 6 6 6-6\"/>", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>", "layout-grid": "<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"/>"});
+  const LUCIDE_ICONS = Object.freeze({"arrow-down": "<path d=\"M12 5v14\"/><path d=\"m19 12-7 7-7-7\"/>", "arrow-left": "<path d=\"m12 19-7-7 7-7\"/><path d=\"M19 12H5\"/>", "arrow-right": "<path d=\"M5 12h14\"/><path d=\"m12 5 7 7-7 7\"/>", "arrow-up": "<path d=\"m5 12 7-7 7 7\"/><path d=\"M12 19V5\"/>", "check": "<path d=\"M20 6 9 17l-5-5\"/>", "chevron-down": "<path d=\"m6 9 6 6 6-6\"/>", "chevron-left": "<path d=\"m15 18-6-6 6-6\"/>", "chevron-right": "<path d=\"m9 18 6-6-6-6\"/>", "chevrons-left": "<path d=\"m11 17-5-5 5-5\"/><path d=\"m18 17-5-5 5-5\"/>", "chevrons-right": "<path d=\"m6 17 5-5-5-5\"/><path d=\"m13 17 5-5-5-5\"/>", "clock": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6l4 2\"/>", "compass": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z\"/>", "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>", "download": "<path d=\"M12 15V3\"/><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><path d=\"m7 10 5 5 5-5\"/>", "ellipsis": "<circle cx=\"12\" cy=\"12\" r=\"1\"/><circle cx=\"19\" cy=\"12\" r=\"1\"/><circle cx=\"5\" cy=\"12\" r=\"1\"/>", "eye": "<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>", "eye-off": "<path d=\"M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49\"/><path d=\"M14.084 14.158a3 3 0 0 1-4.242-4.242\"/><path d=\"M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143\"/><path d=\"m2 2 20 20\"/>", "folder-open": "<path d=\"m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2\"/>", "funnel": "<path d=\"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z\"/>", "grip-vertical": "<circle cx=\"9\" cy=\"12\" r=\"1\"/><circle cx=\"9\" cy=\"5\" r=\"1\"/><circle cx=\"9\" cy=\"19\" r=\"1\"/><circle cx=\"15\" cy=\"12\" r=\"1\"/><circle cx=\"15\" cy=\"5\" r=\"1\"/><circle cx=\"15\" cy=\"19\" r=\"1\"/>", "layout-grid": "<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"/>", "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/>", "map-pin": "<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/>", "maximize": "<path d=\"M8 3H5a2 2 0 0 0-2 2v3\"/><path d=\"M21 8V5a2 2 0 0 0-2-2h-3\"/><path d=\"M3 16v3a2 2 0 0 0 2 2h3\"/><path d=\"M16 21h3a2 2 0 0 0 2-2v-3\"/>", "minimize": "<path d=\"M8 3v3a2 2 0 0 1-2 2H3\"/><path d=\"M21 8h-3a2 2 0 0 1-2-2V3\"/><path d=\"M3 16h3a2 2 0 0 1 2 2v3\"/><path d=\"M16 21v-3a2 2 0 0 1 2-2h3\"/>", "panel-left-open": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/><path d=\"m14 9 3 3-3 3\"/>", "panel-right-open": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M15 3v18\"/><path d=\"m10 15-3-3 3-3\"/>", "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/>", "plus": "<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>", "printer": "<path d=\"M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2\"/><path d=\"M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6\"/><rect x=\"6\" y=\"14\" width=\"12\" height=\"8\" rx=\"1\"/>", "redo-2": "<path d=\"m15 14 5-5-5-5\"/><path d=\"M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13\"/>", "refresh-cw": "<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>", "rotate-ccw": "<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/>", "rss": "<path d=\"M4 11a9 9 0 0 1 9 9\"/><path d=\"M4 4a16 16 0 0 1 16 16\"/><circle cx=\"5\" cy=\"19\" r=\"1\"/>", "search": "<path d=\"m21 21-4.34-4.34\"/><circle cx=\"11\" cy=\"11\" r=\"8\"/>", "settings": "<path d=\"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>", "share": "<path d=\"M12 2v13\"/><path d=\"m16 6-4-4-4 4\"/><path d=\"M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8\"/>", "signpost": "<path d=\"M12 13v8\"/><path d=\"M12 3v3\"/><path d=\"M2.354 10.354a1.207 1.207 0 0 1 0-1.708l2.06-2.06A2 2 0 0 1 5.828 6h12.344a2 2 0 0 1 1.414.586l2.06 2.06a1.207 1.207 0 0 1 0 1.708l-2.06 2.06a2 2 0 0 1-1.414.586H5.828a2 2 0 0 1-1.414-.586z\"/>", "sticky-note": "<path d=\"M21 9a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 15 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z\"/><path d=\"M15 3v5a1 1 0 0 0 1 1h5\"/>", "trash": "<path d=\"M10 11v6\"/><path d=\"M14 11v6\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\"/><path d=\"M3 6h18\"/><path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/>", "undo-2": "<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>", "upload": "<path d=\"M12 3v12\"/><path d=\"m17 8-5-5-5 5\"/><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/>", "x": "<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>"});
   const LUCIDE_ATTRIBUTES = Object.freeze({
     viewBox: "0 0 24 24", fill: "none", stroke: "currentColor",
     "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round",
@@ -49,6 +53,15 @@
   function normalizedAttribute(element, name, fallback = "") {
     const value = element.getAttribute(name)?.trim();
     return value || fallback;
+  }
+
+  // The one wording for any "still loading" message: "Loading {app name}…". Apps and the
+  // shell's own sections use the same text, so a visitor sees the same message everywhere.
+  function loadingMessage() {
+    const info = document.querySelector("marin-app-info");
+    const name = (info && normalizedAttribute(info, "app-name")) ||
+      (document.querySelector(".app-title__link")?.textContent || "").trim() || "this application";
+    return `Loading ${name}\u2026`;
   }
 
   function parseTokenList(value, fallback) {
@@ -188,7 +201,7 @@
     return badge;
   }
 
-  function manifestProjectStatus(source) {
+  function manifestProjectScalar(source, key) {
     if (typeof source !== "string") return "";
     const lines = source.replace(/\r\n?/g, "\n").split("\n");
     let projectIndent = null;
@@ -205,10 +218,9 @@
       if (indent <= projectIndent) break;
       if (indent !== projectIndent + 2) continue;
 
-      const match = line.trim().match(/^status\s*:\s*(?:"([^"]*)"|'([^']*)'|([^#]*?))\s*(?:#.*)?$/);
-      if (!match) continue;
-      const value = (match[1] ?? match[2] ?? match[3] ?? "").trim().toLowerCase();
-      return MARINOS_STATUS_LABELS[value] ? value : "";
+      const match = line.trim().match(/^([A-Za-z_-]+)\s*:\s*(?:"([^"]*)"|'([^']*)'|([^#]*?))\s*(?:#.*)?$/);
+      if (!match || match[1] !== key) continue;
+      return (match[2] ?? match[3] ?? match[4] ?? "").trim().toLowerCase();
     }
     return "";
   }
@@ -228,6 +240,11 @@
     badge.dataset.marinosStatus = source;
     title.append(document.createTextNode(" "), badge);
     return true;
+  }
+
+  function manifestProjectStatus(source) {
+    const value = manifestProjectScalar(source, "status");
+    return MARINOS_STATUS_LABELS[value] ? value : "";
   }
 
   // project.status in the app's own marin.yml is the local source of truth.
@@ -406,7 +423,7 @@
 
       const menuToggle = document.createElement("button");
       menuToggle.type = "button";
-      menuToggle.className = "app-menu-toggle secondary";
+      menuToggle.className = "app-menu-toggle";
       menuToggle.id = "menu-toggle";
       menuToggle.setAttribute("aria-expanded", "false");
       menuToggle.setAttribute("aria-controls", "app-nav");
@@ -456,6 +473,7 @@
         about: cloneTemplate(this, "template[data-about]"),
         security: cloneTemplate(this, "template[data-security-intro]"),
         accessibility: cloneTemplate(this, "template[data-accessibility]"),
+        tech: cloneTemplate(this, "template[data-tech]"),
         updates: cloneTemplate(this, "template[data-updates-intro]"),
       };
       const appName = normalizedAttribute(this, "app-name", "This application");
@@ -465,7 +483,7 @@
       const securityContactUrl = normalizedAttribute(this, "security-contact-url", ".well-known/security.txt");
       const sectionKeys = parseTokenList(
         this.getAttribute("sections"),
-        "about security accessibility updates"
+        "about security accessibility tech updates"
       ).filter((key, index, values) => STANDARD_LINKS[key] && values.indexOf(key) === index);
 
       if (!this.hasAttribute("app-name")) componentWarning(this, 'missing recommended "app-name" attribute');
@@ -546,16 +564,16 @@
           status.setAttribute("role", "status");
           status.setAttribute("aria-live", "polite");
           status.setAttribute("aria-atomic", "true");
-          status.innerHTML = "Loading security information&hellip;";
+          status.textContent = loadingMessage();
           const content = document.createElement("div");
           content.dataset.securityContent = "";
 
           const technicalHeading = document.createElement("h3");
           technicalHeading.textContent = "Technical information";
           const technicalList = document.createElement("ul");
+          // security.txt is already linked under "Report an issue" above, so it is not repeated here.
           [
             [securityJson, "security.json"],
-            [securityContactUrl, "security.txt"],
           ].forEach(([href, label]) => {
             const item = document.createElement("li");
             const link = document.createElement("a");
@@ -579,11 +597,9 @@
 
         if (key === "accessibility") {
           const standardParagraph = document.createElement("p");
-          standardParagraph.append(document.createTextNode(`${appName} targets `));
-          const wcagLink = document.createElement("a");
-          wcagLink.href = WCAG_URL;
-          wcagLink.textContent = "WCAG 2.2 Level AA";
-          standardParagraph.append(wcagLink, document.createTextNode("."));
+          // The link to WCAG is given once, under "Accessibility standard" below; repeating the same
+          // link in nearby text only adds noise for people using a screen reader.
+          standardParagraph.textContent = `${appName} targets WCAG 2.2 Level AA.`;
           section.append(standardParagraph);
 
           if (templates.accessibility) section.append(templates.accessibility);
@@ -596,7 +612,7 @@
           status.setAttribute("role", "status");
           status.setAttribute("aria-live", "polite");
           status.setAttribute("aria-atomic", "true");
-          status.innerHTML = "Loading accessibility score&hellip;";
+          status.textContent = loadingMessage();
           const content = document.createElement("div");
           content.dataset.accessibilityContent = "";
           // The score is read live from marin-os's data/lighthouse.json,
@@ -651,6 +667,26 @@
           );
         }
 
+        if (key === "tech") {
+          if (templates.tech) section.append(templates.tech);
+          const intro = document.createElement("p");
+          intro.textContent = `What ${appName} is made of: its languages, software dependencies, and whether it uses AI as part of the deployed service.`;
+          const status = document.createElement("p");
+          status.className = "app-help-text";
+          status.dataset.techStatus = "";
+          status.setAttribute("role", "status");
+          status.setAttribute("aria-live", "polite");
+          status.setAttribute("aria-atomic", "true");
+          status.textContent = loadingMessage();
+          const content = document.createElement("div");
+          content.dataset.techContent = "";
+          // Read live from marin-os's data/tech.json by catalog id (app-id
+          // attribute, the header's app-id, or <body data-app-id>; else URL).
+          section.dataset.techData = "";
+          section.dataset.techAppId = normalizedAttribute(this, "app-id");
+          section.append(intro, status, content);
+        }
+
         if (key === "updates") {
           if (templates.updates) section.append(templates.updates);
           const status = document.createElement("p");
@@ -659,7 +695,8 @@
           status.setAttribute("role", "status");
           status.setAttribute("aria-live", "polite");
           status.setAttribute("aria-atomic", "true");
-          status.innerHTML = repo ? "Loading recent commits&hellip;" : "Updates are not configured for this application.";
+          if (repo) status.textContent = loadingMessage();
+          else status.textContent = "Updates are not configured for this application.";
           const list = document.createElement("div");
           list.dataset.updatesList = "";
           if (repo) section.dataset.updatesRepo = repo;
@@ -680,7 +717,7 @@
       if (this.dataset.rendered === "true") return;
 
       const appName = normalizedAttribute(this, "app-name", "Application");
-      const requestedLinks = parseTokenList(this.getAttribute("links"), "about security accessibility updates").filter(
+      const requestedLinks = parseTokenList(this.getAttribute("links"), "about security accessibility tech updates").filter(
         (key, index, values) => STANDARD_LINKS[key] && values.indexOf(key) === index
       );
       // About, Security, Accessibility, and Updates are required for every
@@ -788,8 +825,36 @@
         link.target = target;
         if (target === "_blank") link.rel = "noreferrer";
       }
+      // The link sits outside the page's other landmarks, so the component is its own, named by the link text.
+      this.setAttribute("role", "complementary");
+      this.setAttribute("aria-label", label);
       this.replaceChildren(link);
       this.dataset.rendered = "true";
+      this.watchFooter(link);
+    }
+
+    // The button is fixed to the bottom corner, so when the page is scrolled until the
+    // footer appears it would sit on top of footer links. Hide it then (only on pages
+    // that scroll, so a short page keeps its button). It stays in the tab order and
+    // shows itself on keyboard focus, so it is never unreachable.
+    watchFooter(link) {
+      let queued = false;
+      const update = () => {
+        queued = false;
+        const footer = document.querySelector("marin-app-footer .app-footer");
+        const scrolls = document.documentElement.scrollHeight > window.innerHeight + 1;
+        const over = Boolean(footer) && scrolls && footer.getBoundingClientRect().top < window.innerHeight;
+        link.toggleAttribute("data-over-footer", over);
+      };
+      const schedule = () => {
+        if (queued) return;
+        queued = true;
+        window.requestAnimationFrame(update);
+      };
+      window.addEventListener("scroll", schedule, { passive: true });
+      window.addEventListener("resize", schedule);
+      if (typeof ResizeObserver === "function") new ResizeObserver(schedule).observe(document.body);
+      update();
     }
   }
 
@@ -864,10 +929,14 @@
     });
   }
 
-  document.querySelectorAll(".menu").forEach((menu) => {
+  // Each .menu (a toggle button and its panel) opens and closes with no per-page script. An app that builds a menu after the page
+  // loads (Marin Learn's notes) calls window.marinWireMenus(container) once the menu is in the page; marinFormatMenus does it for
+  // the menus inside the container it wires.
+  function wireMenu(menu) {
     const toggle = menu.querySelector(":scope > .menu-toggle");
     const panel = menu.querySelector(":scope > .menu-panel");
-    if (!toggle || !panel) return;
+    if (!toggle || !panel || menu.dataset.menuWired) return;
+    menu.dataset.menuWired = "true";
 
     function closeMenuPanel() {
       toggle.setAttribute("aria-expanded", "false");
@@ -900,7 +969,14 @@
         toggle.focus();
       }
     });
-  });
+  }
+
+  function wireMenus(root = document) {
+    root.querySelectorAll(".menu").forEach(wireMenu);
+  }
+
+  wireMenus();
+  window.marinWireMenus = wireMenus;
 
   // MarinOS banner menu: refresh from marinos/catalog.json so a new app
   // shows up in every other app's banner automatically, instead of every
@@ -1040,45 +1116,144 @@
     heading.append(" ", anchor);
   });
 
-  const toc = document.querySelector(".docs-toc, .toc");
-  const tocLinks = toc
-    ? Array.from(toc.querySelectorAll('a[href^="#"]')).filter((link) => link.hash.length > 1)
-    : [];
-  const tocTargets = tocLinks
-    .map((link) => ({ link, target: document.getElementById(decodeURIComponent(link.hash.slice(1))) }))
-    .filter((item) => item.target);
+  // "On this page" table of contents: every .docs-toc / .toc marks the link for the
+  // section being read with aria-current="location" (CSS makes it bold and accent
+  // blue). The current section is the last one whose top has scrolled past a line
+  // near the top of the window; at the very bottom of the page the last section
+  // counts, even when it is too short to reach that line. Set data-on-this-page-line
+  // on the list to move the line. A page that adds its
+  // table of contents after load calls window.marinOnThisPage(nav).
+  function marinOnThisPage(toc) {
+    if (!toc || toc.dataset.onThisPageReady) return;
+    const items = Array.from(toc.querySelectorAll('a[href^="#"]'))
+      .filter((link) => link.hash.length > 1)
+      .map((link) => ({ link, target: document.getElementById(decodeURIComponent(link.hash.slice(1))) }))
+      .filter((item) => item.target);
+    if (!items.length) return;
+    toc.dataset.onThisPageReady = "true";
 
-  let scrollScheduled = false;
+    let scheduled = false;
+    function update() {
+      scheduled = false;
+      // The reading line: a quarter of the way down the window by default, or the
+      // pixel distance from the top set with data-on-this-page-line (a page of short
+      // sections wants a line near the top so a section at the top is the current one).
+      const line = Number(toc.dataset.onThisPageLine);
+      const threshold = line > 0 ? line : Math.max(96, window.innerHeight * 0.28);
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      let current = items[0];
+      items.forEach((item) => {
+        if (item.target.offsetParent === null) return;
+        if (item.target.getBoundingClientRect().top <= threshold) current = item;
+      });
+      if (atBottom) current = items[items.length - 1];
+      items.forEach((item) => {
+        if (item === current) item.link.setAttribute("aria-current", "location");
+        else item.link.removeAttribute("aria-current");
+      });
+    }
+    function schedule() {
+      if (scheduled) return;
+      scheduled = true;
+      window.requestAnimationFrame(update);
+    }
 
-  function updateCurrentSection() {
-    scrollScheduled = false;
-    if (!tocTargets.length) return;
-
-    const threshold = Math.max(96, window.innerHeight * 0.28);
-    let current = tocTargets[0];
-
-    tocTargets.forEach((item) => {
-      if (item.target.offsetParent === null) return;
-      if (item.target.getBoundingClientRect().top <= threshold) current = item;
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    window.addEventListener("hashchange", schedule);
+    // Stop listening when the page replaces this table of contents.
+    const watcher = new MutationObserver(() => {
+      if (!document.contains(toc)) {
+        window.removeEventListener("scroll", schedule);
+        window.removeEventListener("resize", schedule);
+        window.removeEventListener("hashchange", schedule);
+        watcher.disconnect();
+      }
     });
+    watcher.observe(document.body, { childList: true, subtree: true });
+    update();
+  }
+  window.marinOnThisPage = marinOnThisPage;
+  document.querySelectorAll(".docs-toc, .toc").forEach(marinOnThisPage);
 
-    tocTargets.forEach((item) => {
-      if (item === current) item.link.setAttribute("aria-current", "location");
-      else item.link.removeAttribute("aria-current");
+  // Collapsible filter panels (Marin UI 1.28.0): any button[data-filter-toggle] hides and shows the filter
+  // panel it controls (aria-controls) inside its nearest .search-layout. The shell draws the Lucide
+  // panel-right-open icon while the panel is open and panel-left-open while it is hidden (unless the button holds
+  // its own SVGs marked data-filter-icon="open" and "closed"), sets aria-expanded, data-open on the panel and
+  // data-filters ("open" or "closed") on the layout, starts open on wide screens (a choice made there is remembered
+  // per app and toggle in this browser) and closed up to 850px, names the button "Filter" (or data-filter-label)
+  // plus ", N active" from data-filter-active, and dispatches a bubbling "marin-filters-change" event
+  // ({ detail: { open, button, panel } }) so an app can resize anything sized by the results. Hiding the panel
+  // never changes a filter. The button has no visible text, so its name is its label.
+  const filterToggles = document.querySelectorAll("button[data-filter-toggle]");
+  if (filterToggles.length) {
+    const narrowFilters = window.matchMedia("(max-width: 850px)");
+
+    function filterStorageKey(button) {
+      const app = document.body.dataset.appId || window.location.pathname;
+      return `marinos.filters.${app}.${button.dataset.filterToggle || "filters"}`;
+    }
+
+    function savedFilterChoice(button) {
+      try {
+        return window.localStorage.getItem(filterStorageKey(button));
+      } catch {
+        return null;
+      }
+    }
+
+    function setFilterPanel(button, open, remember) {
+      const layout = button.closest(".search-layout");
+      const panel = document.getElementById(button.getAttribute("aria-controls"));
+      if (!layout || !panel) return;
+      panel.dataset.open = String(open);
+      layout.dataset.filters = open ? "open" : "closed";
+      button.setAttribute("aria-expanded", String(open));
+      // SVG elements have no hidden property, so the attribute is toggled directly.
+      button.querySelector('[data-filter-icon="open"]')?.toggleAttribute("hidden", !open);
+      button.querySelector('[data-filter-icon="closed"]')?.toggleAttribute("hidden", open);
+      if (remember && !narrowFilters.matches) {
+        try {
+          window.localStorage.setItem(filterStorageKey(button), open ? "open" : "closed");
+        } catch {
+          // The choice is just not remembered.
+        }
+      }
+      layout.dispatchEvent(new CustomEvent("marin-filters-change", { bubbles: true, detail: { open, button, panel } }));
+    }
+
+    function nameFilterToggle(button) {
+      const count = Number(button.dataset.filterActive) || 0;
+      const base = button.dataset.filterLabel || "Filter";
+      const name = count ? `${base}, ${count} active` : base;
+      button.setAttribute("aria-label", name);
+      button.title = name;
+    }
+
+    function applyFilterDefaults() {
+      filterToggles.forEach((button) => {
+        setFilterPanel(button, !narrowFilters.matches && savedFilterChoice(button) !== "closed", false);
+      });
+    }
+
+    const filterNames = new MutationObserver((records) => records.forEach((record) => nameFilterToggle(record.target)));
+    filterToggles.forEach((button) => {
+      if (!button.querySelector("svg")) {
+        const open = createLucideIcon("panel-right-open");
+        const closed = createLucideIcon("panel-left-open");
+        open.dataset.filterIcon = "open";
+        closed.dataset.filterIcon = "closed";
+        button.append(open, closed);
+      }
+      nameFilterToggle(button);
+      filterNames.observe(button, { attributes: true, attributeFilter: ["data-filter-active", "data-filter-label"] });
+      button.addEventListener("click", () => {
+        const panel = document.getElementById(button.getAttribute("aria-controls"));
+        if (panel) setFilterPanel(button, panel.dataset.open !== "true", true);
+      });
     });
-  }
-
-  function scheduleCurrentSectionUpdate() {
-    if (scrollScheduled) return;
-    scrollScheduled = true;
-    window.requestAnimationFrame(updateCurrentSection);
-  }
-
-  if (tocTargets.length) {
-    window.addEventListener("scroll", scheduleCurrentSectionUpdate, { passive: true });
-    window.addEventListener("resize", scheduleCurrentSectionUpdate);
-    window.addEventListener("hashchange", scheduleCurrentSectionUpdate);
-    updateCurrentSection();
+    narrowFilters.addEventListener("change", applyFilterDefaults);
+    applyFilterDefaults();
   }
 
   // Sortable table columns: a <thead> button[data-sort-key="foo"] sorts the
@@ -1115,37 +1290,48 @@
     });
   });
 
-  /** Render html into a hidden contenteditable element, select it, and let
-   * the browser's native execCommand("copy") capture both clipboard
-   * flavors from the real selection. Kept only as a fallback for browsers
-   * without the async Clipboard API's multi-flavor write() below — its
-   * plain-text flavor is the browser's own derivation from the selected
-   * DOM (visible text only, e.g. a link's href is dropped), not the exact
-   * `text` a caller asked for, which write() gives explicit control over. */
-  function copyRichTextViaExecCommand(html) {
-    const temp = document.createElement("div");
-    temp.contentEditable = "true";
-    temp.style.position = "fixed";
-    temp.style.left = "-9999px";
-    temp.innerHTML = html;
-    document.body.appendChild(temp);
-    const range = document.createRange();
-    range.selectNodeContents(temp);
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-    const copied = document.execCommand("copy");
-    selection.removeAllRanges();
-    document.body.removeChild(temp);
+  // ---- Shared copy, download, file reading and text cleaning ----------------------------------
+  // Apps call these instead of writing their own, so the same fixes (no page styles in a copied
+  // heading, a byte-order mark in a CSV, Windows-1252 files read correctly) reach every app.
+
+  /** Put `html` and `text` on the clipboard through the browser's copy event. Nothing is rendered,
+   * so no fonts, sizes, colors or bold weights from this page come along: a CMS pastes plain
+   * <h2> and <li> and applies its own look. A text box holds the selection the browser needs to
+   * fire the event (Safari and Firefox do not fire it with nothing selected). */
+  function copyViaCopyEvent(html, text) {
+    const holder = document.createElement("textarea");
+    holder.value = text || " ";
+    holder.setAttribute("readonly", "");
+    holder.setAttribute("aria-hidden", "true");
+    holder.tabIndex = -1;
+    holder.style.cssText = "position:fixed;left:-9999px;top:0;opacity:0";
+    const previousFocus = document.activeElement;
+    document.body.appendChild(holder);
+    holder.select();
+    const onCopy = (event) => {
+      if (html != null) event.clipboardData.setData("text/html", html);
+      event.clipboardData.setData("text/plain", text ?? "");
+      event.preventDefault();
+    };
+    document.addEventListener("copy", onCopy, { once: true });
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } catch {
+      copied = false;
+    }
+    document.removeEventListener("copy", onCopy);
+    document.body.removeChild(holder);
+    if (previousFocus instanceof HTMLElement) previousFocus.focus({ preventScroll: true });
     return copied;
   }
 
-  /** Write both clipboard flavors explicitly so a plain-text paste gets
-   * exactly `text` (e.g. a link's URL, spelled out, not just its visible
-   * label) and a rich-text paste gets exactly `html`. Falls back to the
-   * execCommand technique above, then to plain writeText(text), for
-   * browsers without ClipboardItem/clipboard.write support. */
+  /** Copy rich text: HTML for a visual editor, plain text for everything else. Tries the browser's
+   * copy event first, because it puts exactly the HTML given on the clipboard (the asynchronous
+   * Clipboard API sanitizes it, and an app found a title losing its link that way), then the
+   * asynchronous Clipboard API. Resolves true when copied. */
   async function copyRich(text, html) {
+    if (copyViaCopyEvent(html, text)) return true;
     if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
       try {
         await navigator.clipboard.write([
@@ -1156,18 +1342,440 @@
         ]);
         return true;
       } catch {
-        // Fall through to the older technique below (older browser, or a
-        // permissions/user-gesture rejection ClipboardItem hit but
-        // execCommand might not).
+        // Neither route worked: the caller shows its manual-copy box.
       }
-    }
-    try {
-      if (copyRichTextViaExecCommand(html)) return true;
-    } catch {
-      // Fall through to plain-text writeText in the caller.
     }
     return false;
   }
+
+  /** Copy plain text. Resolves true when copied. */
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      return copyViaCopyEvent(null, text);
+    }
+  }
+
+  const DOWNLOAD_TYPES = Object.freeze({
+    csv: "text/csv", tsv: "text/tab-separated-values", txt: "text/plain", html: "text/html",
+    md: "text/markdown", json: "application/json", svg: "image/svg+xml", png: "image/png",
+  });
+
+  /** Save a file. `content` is a string, Blob or typed array; `type` defaults from the file name.
+   * Text files are UTF-8, and a CSV gets a byte-order mark so Excel reads accents and apostrophes
+   * correctly (pass bom: false to leave it off). */
+  function downloadFile({ content, name, type, bom } = {}) {
+    if (!name) throw new Error("marinDownload needs a file name.");
+    const extension = String(name).split(".").pop().toLowerCase();
+    const mime = type || DOWNLOAD_TYPES[extension] || "application/octet-stream";
+    const isText = typeof content === "string";
+    const withBom = isText && bom !== false && (bom === true || mime.startsWith("text/csv") || extension === "csv");
+    const parts = withBom && !content.startsWith("﻿") ? ["﻿", content] : [content];
+    const blob = content instanceof Blob ? content : new Blob(parts, { type: isText && !/charset=/.test(mime) ? `${mime};charset=utf-8` : mime });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = name;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  /** Decode bytes as text. Valid UTF-8 is read as UTF-8; anything else (a file saved from Excel, where
+   * a curly apostrophe is one byte) is read as Windows-1252. A byte-order mark is dropped.
+   * Returns { text, encoding }. The text never holds a replacement character made by this step. */
+  function decodeText(input) {
+    const bytes = input instanceof ArrayBuffer ? new Uint8Array(input) : input;
+    try {
+      return { text: new TextDecoder("utf-8", { fatal: true }).decode(bytes).replace(/^﻿/, ""), encoding: "utf-8" };
+    } catch {
+      return { text: new TextDecoder("windows-1252").decode(bytes), encoding: "windows-1252" };
+    }
+  }
+
+  /** Read a File or Blob as text (see decodeText). Resolves { text, encoding }. */
+  async function readText(file) {
+    return decodeText(await file.arrayBuffer());
+  }
+
+  // Text that was read with the wrong encoding shows up as these sequences (UTF-8 bytes read as Windows-1252).
+  const MOJIBAKE = Object.freeze([
+    [/â€™|â€˜/g, "'"],
+    [/â€œ|â€\u009d|â€�/g, '"'],
+  ]);
+
+  /** Plain characters for output that goes to a CMS, a URL or a CSV: curly quotes become straight,
+   * non-breaking and zero-width characters are normalized or dropped, text read with the wrong
+   * encoding is repaired, and a replacement character between two letters becomes an apostrophe
+   * (any other is dropped). Opt in: an app that shows text keeps its typographic quotes. */
+  function cleanText(value) {
+    if (typeof value !== "string") return value;
+    let text = value;
+    for (const [pattern, plain] of MOJIBAKE) text = text.replace(pattern, plain);
+    return text
+      .replace(/(\p{L})�(\p{L})/gu, "$1'$2")
+      .replace(/�/g, "")
+      .replace(/[‘’‚‛′`´]/g, "'")
+      .replace(/[“”„″]/g, '"')
+      .replace(/…/g, "...")
+      .replace(/[   ]/g, " ")
+      .replace(/[​‌‍⁠﻿]/g, "");
+  }
+
+  // ---- Upload: a Browse files button, drop anywhere on the page, one set of messages ----------------
+  const UPLOAD_MESSAGES = Object.freeze({
+    type: (accept) => `Unsupported file type. Upload ${accept}.`,
+    size: (bytes) => `That file is too large. The limit is ${bytes >= 1048576 ? `${Math.round((bytes / 1048576) * 10) / 10} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`}.`,
+    first: (name) => `More than one file was dropped. Using the first file: ${name}.`,
+  });
+
+  function acceptList(accept) {
+    return accept.map((item) => item.toLowerCase().replace(/^(?!\.)/, "."));
+  }
+
+  function joinWords(items) {
+    if (items.length <= 1) return items.join("");
+    if (items.length === 2) return `${items[0]} or ${items[1]}`;
+    return `${items.slice(0, -1).join(", ")}, or ${items[items.length - 1]}`;
+  }
+
+  /** Wire a file upload.
+   *
+   *   marinUpload({
+   *     button,           // the Browse files button
+   *     input,            // the hidden <input type="file">
+   *     accept: [".csv", ".xlsx"],   // allowed extensions
+   *     maxBytes,         // optional size limit per file
+   *     multiple,         // true: pass every file; default false: pass the first
+   *     onFile(file),     // called with each accepted file (onFiles(files) once for all of them, if given)
+   *     onMessage(text),  // called with a short plain-language message to show in the page's status line
+   *     overlay,          // true (default) shows a full-page "Drop a file" layer while dragging
+   *   })
+   *
+   * Drop works anywhere on the page. Returns { open() } to open the file chooser from code. */
+  function marinUpload(options) {
+    const { button, input, onFile, onFiles, onMessage, accept = [], maxBytes = 0, multiple = false } = options;
+    const extensions = acceptList(accept);
+    const say = (text) => typeof onMessage === "function" && onMessage(text);
+    let overlay = null;
+    if (options.overlay !== false) {
+      overlay = document.createElement("div");
+      overlay.className = "upload-drop-overlay";
+      overlay.setAttribute("aria-hidden", "true");
+      const inner = document.createElement("div");
+      inner.className = "upload-drop-overlay__inner";
+      inner.textContent = multiple ? "Drop files to upload" : "Drop a file to upload";
+      overlay.append(inner);
+      document.body.append(overlay);
+    }
+    const showOverlay = (on) => overlay && (overlay.dataset.active = on ? "true" : "false");
+
+    function accepted(files) {
+      const ok = [];
+      for (const file of files) {
+        const name = String(file.name || "").toLowerCase();
+        if (extensions.length && !extensions.some((ext) => name.endsWith(ext))) {
+          say(UPLOAD_MESSAGES.type(joinWords(extensions)));
+          continue;
+        }
+        if (maxBytes && file.size > maxBytes) {
+          say(UPLOAD_MESSAGES.size(maxBytes));
+          continue;
+        }
+        ok.push(file);
+      }
+      return ok;
+    }
+
+    function receive(fileList, fromDrop) {
+      const files = Array.from(fileList || []);
+      if (!files.length) return;
+      let chosen = files;
+      if (!multiple && files.length > 1) {
+        chosen = [files[0]];
+        if (fromDrop) say(UPLOAD_MESSAGES.first(files[0].name));
+      }
+      const good = accepted(chosen);
+      if (!good.length) return;
+      if (typeof onFiles === "function") onFiles(good);
+      if (typeof onFile === "function") good.forEach((file) => onFile(file));
+    }
+
+    const open = () => input.click();
+    button?.addEventListener("click", open);
+    input.addEventListener("change", () => {
+      receive(input.files, false);
+      input.value = "";
+    });
+
+    const hasFiles = (event) => event.dataTransfer && Array.from(event.dataTransfer.types || []).includes("Files");
+    window.addEventListener("dragenter", (event) => {
+      if (!hasFiles(event)) return;
+      event.preventDefault();
+      showOverlay(true);
+    });
+    window.addEventListener("dragover", (event) => {
+      if (!hasFiles(event)) return;
+      event.preventDefault();
+      showOverlay(true);
+    });
+    window.addEventListener("dragleave", (event) => {
+      if (!hasFiles(event)) return;
+      if (event.clientX <= 0 || event.clientY <= 0 || event.clientX >= window.innerWidth || event.clientY >= window.innerHeight) showOverlay(false);
+    });
+    window.addEventListener("drop", (event) => {
+      if (!hasFiles(event)) return;
+      event.preventDefault();
+      showOverlay(false);
+      receive(event.dataTransfer.files, true);
+    });
+    return { open };
+  }
+
+  window.marinUpload = marinUpload;
+
+  window.marinCopyRich = copyRich;
+  window.marinCopyText = copyText;
+  window.marinDownload = downloadFile;
+  window.marinDecodeText = decodeText;
+  window.marinReadText = readText;
+  window.marinCleanText = cleanText;
+
+  // ---- The text, HTML and Markdown of a page or a part of one, and the menus that copy and save them -----
+  // Every Copy and Download button offers the same three formats, in the same order: Text, HTML, Markdown. For a page made
+  // of ordinary headings, paragraphs, lists, tables and links, marinContentFormats(root) reads them from the page. The
+  // output is clean (no classes, styles or scripts), so it pastes into a CMS or Word without the page's look. A page whose
+  // content is data (a note, a report) builds its own three strings and passes them to marinFormatMenus.
+  const FORMAT_SKIP = ".doc-actions, .doc-updated, .heading-anchor, script, style, nav, [data-no-copy]";
+
+  /** { text, html, markdown } of `root`. `extraSkip` is a selector for parts to leave out (the shell already leaves out
+   * .doc-actions, .doc-updated, .heading-anchor, nav, script, style and [data-no-copy]). */
+  function contentFormats(root, extraSkip) {
+    const SKIP = extraSkip ? `${FORMAT_SKIP}, ${extraSkip}` : FORMAT_SKIP;
+    const BLOCKS = new Set(["H1", "H2", "H3", "H4", "H5", "H6", "P", "UL", "OL", "TABLE", "DL", "BLOCKQUOTE", "PRE", "DIV", "SECTION", "ASIDE"]);
+
+    function absolute(href) {
+      try {
+        return new URL(href, document.baseURI).href;
+      } catch {
+        return href;
+      }
+    }
+
+    // A <br> is marked while the text is read, so collapsing spaces keeps it. A paragraph keeps its line breaks; a heading,
+    // list item or table cell turns each one into a space.
+    function clean(text, keepBreaks = false) {
+      const collapsed = text.replace(/\s+/g, " ");
+      return (keepBreaks ? collapsed.replace(/ ?\u0001 ?/g, "  \n") : collapsed.replace(/\u0001/g, " ").replace(/\s+/g, " ")).trim();
+    }
+
+    // ---- Markdown -------------------------------------------------------------------------------------
+
+    function inline(node) {
+      let out = "";
+      node.childNodes.forEach((child) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          out += child.textContent.replace(/\s+/g, " ");
+        } else if (child.nodeType === Node.ELEMENT_NODE && !child.matches(SKIP)) {
+          const text = inline(child);
+          switch (child.tagName) {
+            case "STRONG":
+            case "B":
+              out += text.trim() ? `**${text.trim()}**` : text;
+              break;
+            case "EM":
+            case "I":
+              out += text.trim() ? `*${text.trim()}*` : text;
+              break;
+            case "CODE":
+              out += `\`${text}\``;
+              break;
+            case "A":
+              out += child.getAttribute("href") ? `[${text.trim()}](${absolute(child.getAttribute("href"))})` : text;
+              break;
+            case "BR":
+              out += "\u0001";
+              break;
+            case "INPUT":
+              out += child.type === "checkbox" ? (child.checked ? "[x] " : "[ ] ") : "";
+              break;
+            default:
+              out += text;
+          }
+        }
+      });
+      return out;
+    }
+
+    function listToMarkdown(list, depth) {
+      const lines = [];
+      let n = 0;
+      Array.from(list.children).forEach((item) => {
+        if (item.tagName !== "LI") return;
+        n += 1;
+        const marker = list.tagName === "OL" ? `${n}.` : "-";
+        const nested = Array.from(item.children).filter((c) => c.tagName === "UL" || c.tagName === "OL");
+        const own = document.createElement("div");
+        Array.from(item.childNodes).forEach((c) => {
+          if (!nested.includes(c)) own.append(c.cloneNode(true));
+        });
+        lines.push(`${"  ".repeat(depth)}${marker} ${clean(inline(own))}`);
+        nested.forEach((sub) => lines.push(listToMarkdown(sub, depth + 1)));
+      });
+      return lines.join("\n");
+    }
+
+    function tableToMarkdown(table) {
+      const rows = Array.from(table.rows).map((row) => Array.from(row.cells).map((cell) => clean(inline(cell)).replace(/\\/g, "\\\\").replace(/\|/g, "\\|")));
+      if (!rows.length) return "";
+      const width = Math.max(...rows.map((r) => r.length));
+      const pad = (r) => Array.from({ length: width }, (_, i) => r[i] ?? "");
+      const lines = [`| ${pad(rows[0]).join(" | ")} |`, `| ${Array.from({ length: width }, () => "---").join(" | ")} |`];
+      rows.slice(1).forEach((r) => lines.push(`| ${pad(r).join(" | ")} |`));
+      return lines.join("\n");
+    }
+
+    function blockToMarkdown(el, out) {
+      if (el.matches(SKIP)) return;
+      const tag = el.tagName;
+      if (/^H[1-6]$/.test(tag)) {
+        out.push(`${"#".repeat(Number(tag[1]))} ${clean(inline(el))}`);
+      } else if (tag === "P") {
+        const text = clean(inline(el), true);
+        if (text) out.push(text);
+      } else if (tag === "UL" || tag === "OL") {
+        out.push(listToMarkdown(el, 0));
+      } else if (tag === "TABLE") {
+        out.push(tableToMarkdown(el));
+      } else if (tag === "DL") {
+        Array.from(el.children).forEach((c) => {
+          if (c.tagName === "DT") out.push(`**${clean(inline(c))}**`);
+          else if (c.tagName === "DD") out.push(clean(inline(c)));
+        });
+      } else if (tag === "BLOCKQUOTE") {
+        out.push(clean(inline(el)).replace(/^/, "> "));
+      } else {
+        // A wrapper (section, div, aside): read what is inside it.
+        let loose = document.createElement("p");
+        const flush = () => {
+          const text = clean(inline(loose), true);
+          if (text) out.push(text);
+          loose = document.createElement("p");
+        };
+        Array.from(el.childNodes).forEach((child) => {
+          if (child.nodeType === Node.ELEMENT_NODE && BLOCKS.has(child.tagName)) {
+            flush();
+            blockToMarkdown(child, out);
+          } else if (child.nodeType === Node.ELEMENT_NODE && child.matches(SKIP)) {
+            // left out
+          } else {
+            loose.append(child.cloneNode(true));
+          }
+        });
+        flush();
+      }
+    }
+
+    function toMarkdown() {
+      const out = [];
+      Array.from(root.children).forEach((child) => blockToMarkdown(child, out));
+      return out.filter(Boolean).join("\n\n") + "\n";
+    }
+
+    // ---- Text and HTML --------------------------------------------------------------------------------
+
+    // Plain text: the Markdown without its marks. Links keep their address in brackets.
+    function toText() {
+      return toMarkdown()
+        .replace(/^#{1,6} /gm, "")
+        .replace(/\[([^\]]*)\]\(([^)]+)\)/g, "$1 ($2)")
+        .replace(/\*\*([^*]+)\*\*/g, "$1")
+        .replace(/(^|[^*])\*([^*]+)\*/g, "$1$2")
+        .replace(/^\| (?:---(?: \| ---)*) \|\n/gm, "")
+        .replace(/^\| (.*) \|$/gm, (_, row) => row.split(" | ").join("\t"))
+        .replace(/`([^`]+)`/g, "$1");
+    }
+
+    const ALLOWED = new Set(["H1", "H2", "H3", "H4", "H5", "H6", "P", "UL", "OL", "LI", "A", "STRONG", "EM", "B", "I", "CODE", "TABLE", "THEAD", "TBODY", "TR", "TH", "TD", "DL", "DT", "DD", "BR", "BLOCKQUOTE"]);
+
+    function cleanNode(node, into) {
+      node.childNodes.forEach((child) => {
+        if (child.nodeType === Node.TEXT_NODE) {
+          into.append(document.createTextNode(child.textContent));
+        } else if (child.nodeType === Node.ELEMENT_NODE && !child.matches(SKIP)) {
+          if (child.tagName === "INPUT") {
+            into.append(document.createTextNode(child.type === "checkbox" ? (child.checked ? "[x] " : "[ ] ") : ""));
+          } else if (ALLOWED.has(child.tagName)) {
+            const copy = document.createElement(child.tagName);
+            if (child.tagName === "A" && child.getAttribute("href")) copy.setAttribute("href", absolute(child.getAttribute("href")));
+            if (child.tagName === "TH" && child.getAttribute("scope")) copy.setAttribute("scope", child.getAttribute("scope"));
+            cleanNode(child, copy);
+            into.append(copy);
+          } else {
+            cleanNode(child, into);
+          }
+        }
+      });
+    }
+
+    function toHtml() {
+      const holder = document.createElement("div");
+      cleanNode(root, holder);
+      return holder.innerHTML
+        .replace(/>\s+</g, "><")
+        .replace(/ {2,}/g, " ")
+        .replace(/\s+<\/(h[1-6]|li|p|td|th|dt|dd)>/g, "</$1>")
+        .replace(/<(h[1-6]|li|p|td|th|dt|dd)>\s+/g, "<$1>")
+        .trim();
+    }
+
+
+    return { text: toText(), html: toHtml(), markdown: toMarkdown() };
+  }
+
+  /** Wire the buttons inside `container`: [data-copy-format="text|html|markdown"] copies and [data-download-format=
+   * "text|html|markdown"] saves. `provider` is { text, html, markdown } or a function that returns it. The result goes to
+   * the nearest .doc-action-status (or `status`). When a copy fails, `onFail(text)` is called with that format's text so the app can show it in a box to copy by hand. Other formats (a JSON download, for example) are left to the app. */
+  function formatMenus(container, provider, { fileName = "page", status, onFail } = {}) {
+    const say = (message) => {
+      const target = status || container.querySelector(".doc-action-status") || document.querySelector("#app-status-message");
+      if (target) target.textContent = message;
+    };
+    // A page whose content changes (tabs) sets data-file-name as it does, so the file is named for what it holds.
+    const nameNow = () => container.dataset.fileName || fileName;
+    wireMenus(container);
+    container.addEventListener("click", async (event) => {
+      const button = event.target instanceof Element ? event.target.closest("[data-copy-format], [data-download-format]") : null;
+      if (!button || !container.contains(button)) return;
+      const formats = typeof provider === "function" ? provider() : provider;
+      const copy = button.dataset.copyFormat;
+      const save = button.dataset.downloadFormat;
+      const failed = (text) => {
+        say("Could not copy.");
+        if (typeof onFail === "function") onFail(text);
+      };
+      if (copy === "text") (await copyRich(formats.text, formats.html)) ? say("Copied rich text.") : failed(formats.text);
+      else if (copy === "html") (await copyText(formats.html)) ? say("Copied HTML.") : failed(formats.html);
+      else if (copy === "markdown") (await copyText(formats.markdown)) ? say("Copied Markdown.") : failed(formats.markdown);
+      else if (save === "text") { downloadFile({ content: formats.text, name: `${nameNow()}.txt` }); say("Text file downloaded."); }
+      else if (save === "html") { downloadFile({ content: formats.html, name: `${nameNow()}.html` }); say("HTML file downloaded."); }
+      else if (save === "markdown") { downloadFile({ content: formats.markdown, name: `${nameNow()}.md` }); say("Markdown file downloaded."); }
+    });
+  }
+
+  // Declarative: <div class="doc-actions" data-formats-for="article.content" data-file-name="my-page"> ... buttons ... </div>
+  document.querySelectorAll("[data-formats-for]").forEach((container) => {
+    formatMenus(container, () => contentFormats(document.querySelector(container.dataset.formatsFor) || document.body, container.dataset.formatsSkip), {
+      fileName: container.dataset.fileName || "page",
+    });
+  });
+
+  window.marinContentFormats = contentFormats;
+  window.marinFormatMenus = formatMenus;
 
   // Copy-to-clipboard: any button[data-copy-value] copies that value and
   // shows brief feedback. Announces through #app-status-message if present
@@ -1195,12 +1803,12 @@
     if (html) {
       copyRich(value, html).then((copied) => {
         if (copied) onCopied();
-        else navigator.clipboard.writeText(value).then(onCopied).catch(onFailed);
+        else copyText(value).then((plain) => (plain ? onCopied() : onFailed()));
       });
       return;
     }
 
-    navigator.clipboard.writeText(value).then(onCopied).catch(onFailed);
+    copyText(value).then((copied) => (copied ? onCopied() : onFailed()));
   });
 
   // Share: any button[data-action="share"] copies the current page URL and
@@ -1209,13 +1817,65 @@
   document.querySelectorAll('[data-action="share"]').forEach((button) => {
     button.addEventListener("click", async () => {
       const status = button.closest(".doc-actions")?.querySelector(".doc-action-status") ?? null;
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        if (status) status.textContent = "Link copied";
-      } catch {
-        if (status) status.textContent = "Couldn't copy — copy the address bar link instead";
-      }
+      const copied = await copyText(window.location.href);
+      if (status) status.textContent = copied ? "Link copied" : "Couldn't copy — copy the address bar link instead";
     });
+  });
+
+  // Tabs: every [role="tablist"] gets the ARIA tabs keyboard pattern with no
+  // per-page JavaScript — one tab in the Tab order at a time (the selected
+  // one, or the first if none is selected), Left/Right (Up/Down when
+  // aria-orientation="vertical") move between tabs and wrap, Home/End jump to
+  // the first/last, and moving to a tab selects it (focus, then click(), so
+  // the app's own click handling runs). The Tab-order sync follows
+  // aria-selected, however an app sets it. An app that handles these keys
+  // itself just calls preventDefault() on them and this stands down. Tablists
+  // added after load get the arrow keys but not the Tab-order sync.
+  function enabledTabs(tablist) {
+    return Array.from(tablist.querySelectorAll('[role="tab"]')).filter(
+      (tab) => !tab.disabled && tab.getAttribute("aria-disabled") !== "true"
+    );
+  }
+
+  function syncTabStops(tablist) {
+    const tabs = enabledTabs(tablist);
+    if (!tabs.length) return;
+    const stop = tabs.find((tab) => tab.getAttribute("aria-selected") === "true") || tabs[0];
+    tabs.forEach((tab) => {
+      tab.tabIndex = tab === stop ? 0 : -1;
+    });
+  }
+
+  document.querySelectorAll('[role="tablist"]').forEach((tablist) => {
+    syncTabStops(tablist);
+    new MutationObserver(() => syncTabStops(tablist)).observe(tablist, {
+      attributes: true,
+      attributeFilter: ["aria-selected"],
+      childList: true,
+      subtree: true,
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+    const current = event.target instanceof Element ? event.target.closest('[role="tab"]') : null;
+    const tablist = current && current.closest('[role="tablist"]');
+    if (!tablist) return;
+    const tabs = enabledTabs(tablist);
+    const index = tabs.indexOf(current);
+    if (index === -1) return;
+    const vertical = tablist.getAttribute("aria-orientation") === "vertical";
+    const forward = vertical ? "ArrowDown" : "ArrowRight";
+    const back = vertical ? "ArrowUp" : "ArrowLeft";
+    let next;
+    if (event.key === forward) next = tabs[(index + 1) % tabs.length];
+    else if (event.key === back) next = tabs[(index - 1 + tabs.length) % tabs.length];
+    else if (event.key === "Home") next = tabs[0];
+    else if (event.key === "End") next = tabs[tabs.length - 1];
+    else return;
+    event.preventDefault();
+    next.focus();
+    next.click();
   });
 
   // Tab sections: elements sharing a data-tab-section="name" show together,
@@ -1238,10 +1898,15 @@
 
     function showTabFromHash() {
       const hash = window.location.hash.slice(1);
-      const activeName = tabNames.includes(hash) ? hash : tabNames[0];
+      // A hash that names an element inside a tab section opens that section
+      // and scrolls to the element (for example #tech-marin-ui).
+      const target = hash && !tabNames.includes(hash) ? document.getElementById(hash) : null;
+      const owner = target ? target.closest("[data-tab-section]") : null;
+      const activeName = tabNames.includes(hash) ? hash : owner ? owner.dataset.tabSection : tabNames[0];
       tabSections.forEach((section) => {
         section.hidden = section.dataset.tabSection !== activeName;
       });
+      if (owner && !target.hasAttribute("data-subtab")) target.scrollIntoView();
       if (tabNav) {
         tabNav.querySelectorAll('a[href^="#"]').forEach((link) => {
           if (link.getAttribute("href") === `#${activeName}`) link.setAttribute("aria-current", "page");
@@ -1253,6 +1918,36 @@
     showTabFromHash();
     window.addEventListener("hashchange", showTabFromHash);
   }
+
+  // Sub-tabs: a [data-subtabs] group inside a tab section holds a [data-subtabs-nav]
+  // of links (#panel-id) and [data-subtab] panels. One panel shows at a time: the one
+  // the hash names (or contains an element it names), else the first. The nav marks
+  // the current link with aria-current, as #app-nav does. A hash on a panel opens its
+  // tab section without scrolling to it, so the page stays at the tabs.
+  document.querySelectorAll("[data-subtabs]").forEach((group) => {
+    const panels = [...group.querySelectorAll("[data-subtab]")];
+    const nav = group.querySelector("[data-subtabs-nav]");
+    if (!panels.length) return;
+    function showSubtab() {
+      const target = window.location.hash ? document.getElementById(window.location.hash.slice(1)) : null;
+      const owner = target ? target.closest("[data-subtab]") : null;
+      const active = panels.includes(owner) ? owner : panels[0];
+      panels.forEach((panel) => {
+        panel.hidden = panel !== active;
+      });
+      if (nav) {
+        nav.querySelectorAll('a[href^="#"]').forEach((link) => {
+          const to = document.getElementById(link.getAttribute("href").slice(1));
+          // A link to the tab section itself (not to a panel) is the first panel's.
+          const current = to && panels.includes(to) ? to === active : active === panels[0];
+          if (current) link.setAttribute("aria-current", "page");
+          else link.removeAttribute("aria-current");
+        });
+      }
+    }
+    showSubtab();
+    window.addEventListener("hashchange", showSubtab);
+  });
 
   // Updates: any [data-updates-repo="repo"] section lazy-loads that repo's
   // 10 most recent commits from the GitHub API the first time it becomes
@@ -1305,7 +2000,7 @@
 
     async function loadUpdates() {
       if (loaded) return;
-      if (status) status.textContent = "Loading latest commits...";
+      if (status) status.textContent = loadingMessage();
       list.innerHTML = "";
       try {
         // Fetch more than we display: merge-PR commits are filtered out
@@ -1453,6 +2148,618 @@
     }).observe(section, { attributes: true, attributeFilter: ["hidden"] });
   });
 
+  // Records from another app: [data-record-list], [data-key-numbers] and [data-chart]
+  // draw another app's published JSON as the same cards, numbers and charts that app
+  // shows, so one app's records can appear on another app's page without a copy of that
+  // app's code. Each one loads its file the first time it becomes visible (the `hidden`
+  // attribute of the nearest [data-tab-section], or of the element itself, watched the
+  // same way as Updates), so a page with many tabs fetches only what is opened.
+  //
+  // Shared attributes
+  //   data-src       required. JSON address; may be on another site. {date:-29} becomes the UTC
+  //                  date 29 days ago (YYYY-MM-DD) and {date:0} today.
+  //   data-records   optional. Dot path to the array of records (default: the file itself).
+  //   data-match     optional. Field to compare, with data-value. An array field matches when it
+  //                  contains the value. Without it every record is used.
+  //   data-app-name  optional. Names the source in the status lines.
+  //   data-noun      optional. What the records are called (default "records").
+  // Field names may be dot paths ("place.address.locality"). Values are set as text, never
+  // as HTML; only http(s) addresses become links or images.
+  const recordFiles = new Map();
+  const dayMs = 86400000;
+  const pickPath = (value, path) => String(path || "").split(".").filter(Boolean).reduce((found, key) => (found == null ? found : found[key]), value);
+  const expandDates = (src) => src.replace(/\{date:(-?\d+)\}/g, (_, offset) => new Date(Date.now() + Number(offset) * dayMs).toISOString().slice(0, 10));
+  const isWebAddress = (value) => /^https?:\/\//.test(value);
+
+  // A YYYY-MM-DD value is a long date; a full date and time is the short form the
+  // console shows on its cards ("Nov 2, 4:12 PM"), in Pacific time.
+  const asText = (value) => {
+    if (Array.isArray(value)) return value.map(asText).filter(Boolean).join(", ");
+    if (value == null) return "";
+    const text = String(value);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+      const date = new Date(`${text}T00:00:00Z`);
+      if (!Number.isNaN(date.getTime())) return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+    }
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(text)) {
+      const date = new Date(text);
+      if (!Number.isNaN(date.getTime())) return date.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/Los_Angeles" });
+    }
+    return text;
+  };
+
+  // The day a record falls on, in Pacific time, as YYYY-MM-DD.
+  const dayOf = (value) => {
+    const text = String(value ?? "");
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+    const date = new Date(text);
+    return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" });
+  };
+
+  function fetchJson(src) {
+    if (!recordFiles.has(src)) {
+      recordFiles.set(src, fetch(expandDates(src), { cache: "no-store", credentials: "omit" }).then((response) => {
+        if (!response.ok) throw new Error(`${src}: ${response.status}`);
+        return response.json();
+      }));
+      recordFiles.get(src).catch(() => recordFiles.delete(src));
+    }
+    return recordFiles.get(src);
+  }
+
+  async function fetchRecords(el) {
+    // data-src may name several files, separated by spaces; their records are joined, and a record
+    // found in more than one file (same data-unique field) is kept once. One missing file is skipped.
+    const sources = el.dataset.src.split(/\s+/).filter(Boolean);
+    const loaded = await Promise.allSettled(sources.map((src) => fetchJson(src)));
+    if (loaded.every((one) => one.status === "rejected")) throw loaded[0].reason;
+    const lists = loaded.filter((one) => one.status === "fulfilled").map((one) => pickPath(one.value, el.dataset.records));
+    if (!lists.every(Array.isArray)) throw new Error(`${el.dataset.src}: no list of records`);
+    let records = lists.flat();
+    if (el.dataset.unique) {
+      const seen = new Set();
+      records = records.filter((record) => {
+        const key = pickPath(record, el.dataset.unique);
+        if (key == null || !seen.has(key)) { seen.add(key); return true; }
+        return false;
+      });
+    }
+    if (el.dataset.match) {
+      records = records.filter((record) => {
+        const found = pickPath(record, el.dataset.match);
+        return Array.isArray(found) ? found.includes(el.dataset.value) : found === el.dataset.value;
+      });
+    }
+    if (el.dataset.exclude) {
+      // "field=value": drop the records whose field equals the value (or lists it).
+      const [field, ...rest] = el.dataset.exclude.split("=");
+      const value = rest.join("=");
+      records = records.filter((record) => {
+        const found = pickPath(record, field);
+        return !(Array.isArray(found) ? found.includes(value) : found === value);
+      });
+    }
+    return records;
+  }
+
+  // Runs `load` once, the first time the element's tab section is shown.
+  function whenShown(el, load) {
+    const gates = [el.closest("[data-tab-section]"), el.closest("[data-subtab]")].filter(Boolean);
+    if (!gates.length) gates.push(el);
+    let started = false;
+    const start = () => {
+      if (started || gates.some((gate) => gate.hidden)) return;
+      started = true;
+      load();
+    };
+    start();
+    if (!started) gates.forEach((gate) => new MutationObserver(start).observe(gate, { attributes: true, attributeFilter: ["hidden"] }));
+  }
+
+  const statusLine = (name) => {
+    const status = document.createElement("p");
+    status.setAttribute("role", "status");
+    status.className = "app-help-text";
+    status.dataset[name] = "";
+    return status;
+  };
+
+  // Record lists: the app's result cards.
+  //   data-title     required. Field shown as each card's heading.
+  //   data-link      optional. Field holding an http(s) address; the heading links to it.
+  //   data-link-template optional. Instead of data-link: an address with {field} parts filled from the record.
+  //   data-meta      optional. Comma-separated fields shown under the heading, joined by " — ".
+  //                  "field:words" adds words after the value ("redirects:visits" reads "5 visits").
+  //   data-hidden-path  optional. Dot path to a flag; when true nothing is drawn and
+  //                  data-hidden-text is shown (a service that hides small counts).
+  //   data-text      optional. Field shown as a short description under the byline.
+  //   data-image     optional. Field holding an http(s) address of a picture.
+  //   data-badge     optional. Field shown as a badge above the heading.
+  //   data-sort      optional. Field to sort by; data-sort-order is "desc" (default) or "asc".
+  //   data-limit     optional. Most cards drawn (default 24).
+  //   data-empty-text optional. Shown instead of "No {noun} found." when no record is left to draw.
+  //   data-src       may name several files separated by spaces; data-unique is the field that makes a record the same
+  //                  record when it is in more than one of them (an agency and its divisions).
+  //   data-columns   optional. 2 or 3: cards in that many columns on a wide screen (one on a narrow one).
+  //   data-group    optional. Field to group by (an array field counts each value). The list then draws one card for each
+  //                  value, not one for each record: the value as the heading, how many records it has, and the dates
+  //                  they span. data-group-link is the address the heading links to, with {value} replaced by the value
+  //                  (a campaign's page of records, filtered); data-group-date is the date field for the span.
+  //   data-timeframe optional. Field holding each record's date; the status line then says how far back the
+  //                  records go: "(last week)", "(last month)", "(last 3 months)" or "(since Jan 5, 2026)".
+  document.querySelectorAll("[data-record-list]").forEach((list) => {
+    if (!list.dataset.src || !list.dataset.title) return;
+    const appName = list.dataset.appName || "records";
+    const noun = list.dataset.noun || "records";
+    const limit = Number.parseInt(list.dataset.limit || "24", 10) || 24;
+    const status = statusLine("recordListStatus");
+    const cards = document.createElement("ul");
+    cards.className = "search-results-list";
+    if (["2", "3"].includes(list.dataset.columns)) cards.classList.add(`search-results-list--${list.dataset.columns}`);
+    cards.setAttribute("aria-label", noun);
+    list.replaceChildren(status, cards);
+
+    const field = (record, name) => asText(pickPath(record, name));
+
+    function draw(records) {
+      records.slice(0, limit).forEach((record) => {
+        const card = document.createElement("li");
+        card.className = "app-card mm-card";
+        const imageAddress = list.dataset.image ? field(record, list.dataset.image) : "";
+        if (isWebAddress(imageAddress)) {
+          const image = document.createElement("img");
+          image.className = "mm-card__image";
+          image.src = imageAddress;
+          image.alt = "";
+          image.loading = "lazy";
+          card.append(image);
+        }
+        const body = document.createElement("div");
+        body.className = "mm-card__body";
+        const badge = list.dataset.badge ? field(record, list.dataset.badge) : "";
+        if (badge) {
+          const row = document.createElement("div");
+          row.className = "mm-card__meta";
+          const tag = document.createElement("span");
+          tag.className = "app-badge";
+          tag.textContent = badge.charAt(0).toUpperCase() + badge.slice(1);
+          row.append(tag);
+          body.append(row);
+        }
+        const heading = document.createElement("h3");
+        heading.className = "mm-card__title";
+        // data-link names a field holding the address; data-link-template builds it from fields: "https://x.org/?id={id}".
+        const address = list.dataset.linkTemplate
+          ? list.dataset.linkTemplate.replace(/\{([^}]+)\}/g, (_, name) => encodeURIComponent(pickPath(record, name) ?? ""))
+          : list.dataset.link ? field(record, list.dataset.link) : "";
+        if (isWebAddress(address)) {
+          const anchor = document.createElement("a");
+          anchor.href = address;
+          anchor.target = "_blank";
+          anchor.rel = "noreferrer";
+          anchor.textContent = field(record, list.dataset.title);
+          heading.append(anchor);
+        } else {
+          heading.textContent = field(record, list.dataset.title);
+        }
+        body.append(heading);
+        // "field:words" adds the words after the value ("redirects:visits" reads "5 visits").
+        const meta = (list.dataset.meta || "").split(",").map((entry) => {
+          const [name, words] = entry.trim().split(":");
+          const value = field(record, name);
+          return value && words ? `${value} ${words}` : value;
+        }).filter(Boolean).join(" — ");
+        if (meta) {
+          const byline = document.createElement("p");
+          byline.className = "mm-card__byline";
+          byline.textContent = meta;
+          body.append(byline);
+        }
+        const text = list.dataset.text ? field(record, list.dataset.text) : "";
+        if (text) {
+          const description = document.createElement("p");
+          description.className = "mm-card__text";
+          description.textContent = text;
+          body.append(description);
+        }
+        card.append(body);
+        cards.append(card);
+      });
+    }
+
+    whenShown(list, async () => {
+      status.textContent = `Loading ${appName}…`;
+      try {
+        if (list.dataset.hiddenPath && pickPath(await fetchJson(list.dataset.src.split(/\s+/)[0]), list.dataset.hiddenPath) === true) {
+          status.textContent = list.dataset.hiddenText || "Too few to show.";
+          return;
+        }
+        let records = await fetchRecords(list);
+        if (list.dataset.sort) {
+          const direction = list.dataset.sortOrder === "asc" ? 1 : -1;
+          records = [...records].sort((a, b) => direction * String(pickPath(a, list.dataset.sort) ?? "").localeCompare(String(pickPath(b, list.dataset.sort) ?? ""), "en", { numeric: true }));
+        }
+        if (!records.length) {
+          status.textContent = list.dataset.emptyText || `No ${noun} found.`;
+          return;
+        }
+        if (list.dataset.group) {
+          // One card for each value of the field: its name, how many records it has, and the dates they span.
+          const groups = new Map();
+          records.forEach((record) => {
+            const found = pickPath(record, list.dataset.group);
+            (Array.isArray(found) ? found : [found]).filter((value) => value != null && value !== "").forEach((value) => {
+              if (!groups.has(String(value))) groups.set(String(value), []);
+              groups.get(String(value)).push(record);
+            });
+          });
+          const span = (members) => {
+            const days = members.map((record) => dayOf(pickPath(record, list.dataset.groupDate))).filter(Boolean).sort();
+            if (!days.length) return { last: "", text: "" };
+            const part = (day, withYear) => new Date(`${day}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", ...(withYear ? { year: "numeric" } : {}), timeZone: "UTC" });
+            const [first, last] = [days[0], days[days.length - 1]];
+            const text = first === last ? part(first, true) : first.slice(0, 4) === last.slice(0, 4) ? `${part(first, false)} – ${part(last, true)}` : `${part(first, true)} – ${part(last, true)}`;
+            return { last, text };
+          };
+          const entries = [...groups].map(([value, members]) => ({ value, members, ...span(members) }))
+            .sort((a, b) => (b.last || "").localeCompare(a.last || "") || a.value.localeCompare(b.value, "en"));
+          entries.slice(0, limit).forEach((entry) => {
+            const card = document.createElement("li");
+            card.className = "app-card mm-card";
+            const body = document.createElement("div");
+            body.className = "mm-card__body";
+            const heading = document.createElement("h3");
+            heading.className = "mm-card__title";
+            const address = (list.dataset.groupLink || "").replace("{value}", encodeURIComponent(entry.value));
+            if (isWebAddress(address)) {
+              const anchor = document.createElement("a");
+              anchor.href = address;
+              anchor.target = "_blank";
+              anchor.rel = "noreferrer";
+              anchor.textContent = entry.value;
+              heading.append(anchor);
+            } else {
+              heading.textContent = entry.value;
+            }
+            const byline = document.createElement("p");
+            byline.className = "mm-card__byline";
+            const unit = list.dataset.groupNoun || "records";
+            byline.textContent = [`${entry.members.length} ${entry.members.length === 1 ? unit.replace(/s$/, "") : unit}`, entry.text].filter(Boolean).join(" — ");
+            body.append(heading, byline);
+            card.append(body);
+            cards.append(card);
+          });
+          // A count of everything drawn says nothing a person cannot see; only a cut-off list says how much is left out.
+          status.textContent = entries.length > limit ? `Showing ${limit} of ${entries.length} ${noun}.` : "";
+          return;
+        }
+        draw(records);
+        // How far back the records go, from the oldest one, in Pacific days.
+        let span = "";
+        if (list.dataset.timeframe) {
+          const days = records.map((record) => dayOf(pickPath(record, list.dataset.timeframe))).filter(Boolean).sort();
+          if (days.length) {
+            const today = dayOf(new Date().toISOString());
+            const ago = Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${days[0]}T00:00:00Z`)) / dayMs);
+            span = ago <= 7 ? "last week" : ago <= 31 ? "last month" : ago <= 93 ? "last 3 months" : `since ${asText(days[0])}`.replace(/(\w+) (\d+), (\d+)/, (_, m, d, y) => `${m.slice(0, 3)} ${d}, ${y}`);
+          }
+        }
+        // A plain count of everything drawn is left out; a cut-off list, or one with a timeframe, says so.
+        const counted = records.length > limit ? `Showing ${limit} of ${records.length} ${noun}` : `${records.length} ${noun}`;
+        status.textContent = records.length > limit || span ? `${counted}${span ? ` (${span})` : ""}.` : "";
+      } catch (error) {
+        console.error(error);
+        status.textContent = `${appName} could not be loaded right now.`;
+      }
+    });
+  });
+
+  // Key numbers: the app's stat cards. Either numbers a service already added up, or
+  // numbers counted from the records.
+  //   data-fields       "field:Label,field:Label"; each field is a dot path under data-path
+  //                     (default "data") of the service's answer.
+  //   data-compute      instead of data-fields, a JSON list counted from the records:
+  //                     ["count","Label"], ["count","Label","field","value"] (records where the
+  //                     field equals the value), or ["unique","Label","field"] (different values).
+  //   data-hidden-path  optional. Dot path to a flag; when true the numbers are withheld and
+  //                     data-hidden-text is shown instead (a service that hides small counts).
+  document.querySelectorAll("[data-key-numbers]").forEach((box) => {
+    if (!box.dataset.src) return;
+    const fields = (box.dataset.fields || "")
+      .split(",")
+      .map((pair) => pair.split(":"))
+      .filter(([field, label]) => field && label)
+      .map(([field, label]) => [field.trim(), label.trim()]);
+    let compute = [];
+    try {
+      compute = box.dataset.compute ? JSON.parse(box.dataset.compute) : [];
+    } catch (error) {
+      console.error(error);
+    }
+    if (!fields.length && !compute.length) return;
+    const appName = box.dataset.appName || "numbers";
+    const status = statusLine("keyNumbersStatus");
+    const grid = document.createElement("div");
+    grid.className = "mm-stats-kpis";
+    box.replaceChildren(status, grid);
+
+    const add = (label, value) => {
+      const card = document.createElement("div");
+      card.className = "mm-stats-kpi";
+      const name = document.createElement("p");
+      name.className = "app-help-text";
+      name.textContent = label;
+      const number = document.createElement("p");
+      number.className = "mm-stats-kpi__value";
+      number.textContent = value.toLocaleString("en-US");
+      card.append(name, number);
+      grid.append(card);
+    };
+
+    whenShown(box, async () => {
+      status.textContent = `Loading ${appName}…`;
+      try {
+        if (compute.length) {
+          const records = await fetchRecords(box);
+          compute.forEach(([kind, label, field, value]) => {
+            if (kind === "unique") add(label, new Set(records.map((record) => pickPath(record, field)).filter((v) => v != null && v !== "")).size);
+            else add(label, field ? records.filter((record) => pickPath(record, field) === value).length : records.length);
+          });
+          status.textContent = "";
+          return;
+        }
+        const body = await fetchJson(box.dataset.src);
+        if (box.dataset.hiddenPath && pickPath(body, box.dataset.hiddenPath) === true) {
+          status.textContent = box.dataset.hiddenText || "Too few to show.";
+          return;
+        }
+        const data = pickPath(body, box.dataset.path || "data");
+        if (!data || typeof data !== "object") throw new Error(`${box.dataset.src}: no numbers`);
+        fields.forEach(([field, label]) => {
+          const value = pickPath(data, field);
+          if (typeof value === "number") add(label, value);
+        });
+        status.textContent = grid.children.length ? "" : `No ${appName} numbers found.`;
+      } catch (error) {
+        console.error(error);
+        status.textContent = `${appName} could not be loaded right now.`;
+      }
+    });
+  });
+
+  // Charts: the app's chart cards, drawn with Chart.js from the page's own copy.
+  //   data-chart-lib    required. Address of chart.min.js, loaded when the first chart is shown.
+  //   data-chart-title  required. The card's heading.
+  //   data-kind         "line" (default; counts per day, or per month) or "bar" (ranked, horizontal).
+  //   data-date         line. Field holding each record's date; data-bucket is "day" (default) or "month".
+  //   data-group        bar. Field to rank; an array field counts each of its values.
+  //   data-sum          optional. Field to add up instead of counting records (rows a service
+  //                     already added up by day).
+  //   data-top          bar. Most bars drawn (default 10).
+  //   data-hidden-path  optional. As for key numbers.
+  // Amounts the page already holds (a budget): data-inline names a <script type="application/json"> in the
+  // page, { labels: [...], series: [{ name, values: [...] }], format: "currency" | "number", summary: "..." },
+  // instead of data-src. Then data-kind is "columns" (vertical), "bars" (horizontal) or "pie" (the first series as shares of a whole), data-stacked stacks
+  // the series, and nothing is fetched except Chart.js.
+  const chartLoads = new Map();
+  const loadChartLib = (src) => {
+    if (typeof window.Chart !== "undefined") return Promise.resolve();
+    if (!chartLoads.has(src)) {
+      chartLoads.set(src, new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error(`${src}: could not load the chart library`));
+        document.head.append(script);
+      }));
+    }
+    return chartLoads.get(src);
+  };
+
+  document.querySelectorAll("[data-chart]").forEach((box) => {
+    if ((!box.dataset.src && !box.dataset.inline) || !box.dataset.chartLib || !box.dataset.chartTitle) return;
+    const appName = box.dataset.appName || "chart";
+    const inlineKind = ["columns", "bars", "pie"].includes(box.dataset.kind) ? box.dataset.kind : "";
+    const kind = box.dataset.kind === "bar" ? "bar" : "line";
+    const card = document.createElement("section");
+    card.className = "app-card";
+    const heading = document.createElement("h3");
+    heading.textContent = box.dataset.chartTitle;
+    const status = statusLine("chartStatus");
+    const canvas = document.createElement("canvas");
+    canvas.setAttribute("role", "img");
+    canvas.setAttribute("aria-label", box.dataset.chartTitle);
+    canvas.hidden = true;
+    card.append(heading, status, canvas);
+    box.replaceChildren(card);
+
+    const monthOf = (day) => day.slice(0, 7);
+    function tally(records) {
+      const sum = (record) => (box.dataset.sum ? Number(pickPath(record, box.dataset.sum)) || 0 : 1);
+      const counts = new Map();
+      if (kind === "bar") {
+        records.forEach((record) => {
+          const found = pickPath(record, box.dataset.group);
+          (Array.isArray(found) ? found : [found]).filter((v) => v != null && v !== "").forEach((v) => counts.set(String(v), (counts.get(String(v)) || 0) + sum(record)));
+        });
+        return [...counts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, Number.parseInt(box.dataset.top || "10", 10) || 10);
+      }
+      const byMonth = box.dataset.bucket === "month";
+      records.forEach((record) => {
+        const day = dayOf(pickPath(record, box.dataset.date));
+        if (!day) return;
+        const key = byMonth ? monthOf(day) : day;
+        counts.set(key, (counts.get(key) || 0) + sum(record));
+      });
+      const keys = [...counts.keys()].sort();
+      if (!keys.length) return [];
+      // Keep the quiet days and months on the line, so a gap looks like a gap.
+      const filled = [];
+      const step = (key) => {
+        const [year, month, day] = key.split("-").map(Number);
+        const next = byMonth ? new Date(Date.UTC(year, month, 1)) : new Date(Date.UTC(year, month - 1, day + 1));
+        return next.toISOString().slice(0, byMonth ? 7 : 10);
+      };
+      for (let key = keys[0], guard = 0; key <= keys[keys.length - 1] && guard < 800; key = step(key), guard += 1) filled.push([key, counts.get(key) || 0]);
+      return filled;
+    }
+
+    const labelFor = (key) => {
+      if (kind === "bar") return key;
+      const date = new Date(`${key.length === 7 ? `${key}-01` : key}T00:00:00Z`);
+      return date.toLocaleDateString("en-US", key.length === 7 ? { month: "short", year: "numeric", timeZone: "UTC" } : { month: "short", day: "numeric", timeZone: "UTC" });
+    };
+
+    // Colors that stay apart for people who see color differently (Okabe and Ito); the series are also named
+    // in the legend, so color is never the only signal.
+    const seriesColors = ["#0072B2", "#E69F00", "#009E73", "#D55E00", "#CC79A7", "#56B4E9", "#8c6d1f", "#555555", "#999999"];
+    const amountText = (value, format, short) => {
+      if (format === "currency") {
+        const sign = value < 0 ? "−" : "";
+        const abs = Math.abs(value);
+        if (short && abs >= 1e6) return `${sign}$${(abs / 1e6).toFixed(abs >= 1e8 ? 0 : 1).replace(/\.0$/, "")}M`;
+        if (short && abs >= 1e3) return `${sign}$${Math.round(abs / 1e3)}K`;
+        return `${sign}$${abs.toLocaleString("en-US")}`;
+      }
+      return value.toLocaleString("en-US", { maximumFractionDigits: 2 });
+    };
+    async function drawInline() {
+      const holder = document.getElementById(box.dataset.inline);
+      const spec = holder ? JSON.parse(holder.textContent) : null;
+      await loadChartLib(box.dataset.chartLib);
+      if (!spec || !Array.isArray(spec.labels) || !spec.labels.length || !Array.isArray(spec.series) || !spec.series.length) {
+        status.textContent = box.dataset.emptyText || "Nothing to show yet.";
+        return;
+      }
+      const format = spec.format || "number";
+      if (inlineKind === "pie") {
+        // One series as shares of a whole: slices from the largest, each named in the legend with its share, and its
+        // amount and percentage in the tooltip. A zero or negative value has no slice.
+        const slices = spec.labels.map((label, index) => [label, Number(spec.series[0].values[index]) || 0]).filter(([, value]) => value > 0).sort((a, b) => b[1] - a[1]);
+        const whole = slices.reduce((sum, [, value]) => sum + value, 0);
+        if (!slices.length) {
+          status.textContent = box.dataset.emptyText || "Nothing to show yet.";
+          return;
+        }
+        const share = (value) => `${((value / whole) * 100).toFixed(value / whole < 0.1 ? 1 : 0)}%`;
+        canvas.setAttribute("aria-label", `${box.dataset.chartTitle}. ${spec.summary || `${slices[0][0]} is the largest share, ${share(slices[0][1])} of ${amountText(whole, format)}.`}`);
+        window.Chart.defaults.color = getComputedStyle(card).color;
+        window.Chart.defaults.borderColor = getComputedStyle(card).borderTopColor;
+        const wrapPie = document.createElement("div");
+        wrapPie.style.position = "relative";
+        // Many slices: the legend goes underneath, in as many rows as it needs, so no name is cut off.
+        const many = slices.length > 8;
+        wrapPie.style.height = many ? `${300 + slices.length * 14}px` : "320px";
+        canvas.replaceWith(wrapPie);
+        wrapPie.append(canvas);
+        status.hidden = true;
+        canvas.hidden = false;
+        new window.Chart(canvas, {
+          type: "pie",
+          data: { labels: slices.map(([label]) => label), datasets: [{ data: slices.map(([, value]) => value), backgroundColor: slices.map((_, index) => seriesColors[index % seriesColors.length]), borderColor: getComputedStyle(card).backgroundColor, borderWidth: 2 }] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: true, position: many ? "bottom" : "right", labels: { generateLabels: (chart) => chart.data.labels.map((label, index) => ({ text: `${label}, ${share(chart.data.datasets[0].data[index])}`, fillStyle: chart.data.datasets[0].backgroundColor[index], strokeStyle: chart.data.datasets[0].backgroundColor[index], hidden: false, index })) } },
+              tooltip: { callbacks: { label: (item) => `${item.label}: ${amountText(item.parsed, format)} (${share(item.parsed)})` } },
+            },
+          },
+        });
+        return;
+      }
+      const horizontal = inlineKind === "bars";
+      const stacked = box.hasAttribute("data-stacked");
+      const many = spec.series.length > 1;
+      let summary = spec.summary;
+      if (!summary) {
+        const first = spec.series[0];
+        const top = first.values.indexOf(Math.max(...first.values));
+        summary = many
+          ? `${spec.series.map((one) => `${one.name} totals ${amountText(one.values.reduce((a, b) => a + b, 0), format)}`).join("; ")}.`
+          : `Largest: ${spec.labels[top]} at ${amountText(first.values[top], format)}, of ${spec.labels.length} shown.`;
+      }
+      canvas.setAttribute("aria-label", `${box.dataset.chartTitle}. ${summary}`);
+      window.Chart.defaults.color = getComputedStyle(card).color;
+      window.Chart.defaults.borderColor = getComputedStyle(card).borderTopColor;
+      // Horizontal bars get a row each; the chart's box grows with them.
+      const wrap = document.createElement("div");
+      wrap.style.position = "relative";
+      wrap.style.height = horizontal ? `${Math.max(160, spec.labels.length * (many && !stacked ? 20 * spec.series.length : 28) + 64)}px` : "320px";
+      canvas.replaceWith(wrap);
+      wrap.append(canvas);
+      status.hidden = true;
+      canvas.hidden = false;
+      const valueAxis = { beginAtZero: true, stacked, ticks: { callback: (value) => amountText(value, format, true) } };
+      const labelAxis = { stacked, grid: { display: false } };
+      new window.Chart(canvas, {
+        type: "bar",
+        data: {
+          labels: spec.labels,
+          datasets: spec.series.map((one, index) => ({ label: one.name, data: one.values, backgroundColor: seriesColors[index % seriesColors.length], borderColor: seriesColors[index % seriesColors.length] })),
+        },
+        options: {
+          indexAxis: horizontal ? "y" : "x",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: many, position: "bottom" },
+            tooltip: { callbacks: { label: (item) => `${item.dataset.label}: ${amountText(item.parsed[horizontal ? "x" : "y"], format)}` } },
+          },
+          scales: horizontal ? { x: valueAxis, y: labelAxis } : { x: labelAxis, y: valueAxis },
+        },
+      });
+    }
+
+    whenShown(box, async () => {
+      status.textContent = `Loading ${appName}…`;
+      try {
+        if (inlineKind) {
+          await drawInline();
+          return;
+        }
+        const [body] = await Promise.all([fetchJson(box.dataset.src.split(/\s+/)[0]), loadChartLib(box.dataset.chartLib)]);
+        if (box.dataset.hiddenPath && pickPath(body, box.dataset.hiddenPath) === true) {
+          // The key numbers beside it already say why; a second card saying it again adds nothing.
+          box.hidden = true;
+          return;
+        }
+        const records = await fetchRecords(box);
+        const entries = tally(records);
+        if (!entries.length) {
+          if ("hideEmpty" in box.dataset) {
+            box.hidden = true;
+            return;
+          }
+          status.textContent = box.dataset.emptyText || "Nothing to show yet.";
+          return;
+        }
+        const labels = entries.map(([key]) => labelFor(key));
+        const values = entries.map(([, count]) => count);
+        const peak = values.indexOf(Math.max(...values));
+        canvas.setAttribute("aria-label", kind === "bar"
+          ? `${box.dataset.chartTitle}. Top: ${labels[0]} with ${values[0]}, of ${labels.length} shown.`
+          : `${box.dataset.chartTitle}. ${values.reduce((a, b) => a + b, 0)} total, peaking at ${values[peak]} on ${labels[peak]}.`);
+        // Chart.js draws its own text and grid, so give it the page's colors.
+        window.Chart.defaults.color = getComputedStyle(card).color;
+        window.Chart.defaults.borderColor = getComputedStyle(card).borderTopColor;
+        status.hidden = true;
+        canvas.hidden = false;
+        canvas.style.maxHeight = "320px";
+        new window.Chart(canvas, {
+          type: kind,
+          data: { labels, datasets: [{ data: values, borderColor: "#0777cf", backgroundColor: "#0777cf", tension: 0 }] },
+          options: kind === "bar"
+            ? { indexAxis: "y", responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 } } } }
+            : { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { precision: 0 }, beginAtZero: true } } },
+        });
+      } catch (error) {
+        console.error(error);
+        status.textContent = `${appName} could not be loaded right now.`;
+      }
+    });
+  });
+
   // Security: any [data-security-json="path"] section lazy-loads that path
   // (same-origin, same repo — unlike Updates, there's no cross-repo GitHub
   // API call needed) the first time it becomes visible, and renders its
@@ -1477,6 +2784,14 @@
         .replace(/"/g, "&quot;");
     }
 
+    // Who the app is for comes from project.audience in the app's own
+    // marin.yml, so it can't drift from the manifest. The security profile
+    // label is only the fallback when marin.yml can't be read.
+    const AUDIENCE_LABELS = {
+      staff: "County staff",
+      public: "The public",
+      developers: "Developers",
+    };
     const PROFILE_LABELS = {
       "public-web": "Public web application",
       "public-api": "Public API",
@@ -1487,7 +2802,7 @@
 
     async function loadSecurity() {
       if (loaded) return;
-      status.textContent = "Loading security information...";
+      status.textContent = loadingMessage();
       try {
         const response = await fetch(jsonPath, { cache: "no-store" });
         if (response.status === 404) {
@@ -1503,7 +2818,11 @@
           status.textContent = "This application's security.json has no public security summary yet.";
           return;
         }
-        const profileLabel = pub.profile || PROFILE_LABELS[config.profile] || "Not set";
+        const manifest = await fetch("marin.yml", { cache: "no-store" })
+          .then((res) => (res.ok ? res.text() : ""))
+          .catch(() => "");
+        const audienceLabel = AUDIENCE_LABELS[manifestProjectScalar(manifest, "audience")];
+        const profileLabel = audienceLabel || PROFILE_LABELS[config.profile] || "Not set";
         status.textContent = pub.lastReviewed ? `Last reviewed ${escapeHtml(pub.lastReviewed)}.` : "Review date not recorded.";
         const controlsHtml =
           Array.isArray(pub.controls) && pub.controls.length
@@ -1516,7 +2835,7 @@
               .join("")}</ul>`
           : "";
         content.innerHTML =
-          `<p><b>Security profile:</b> ${escapeHtml(profileLabel)}</p>` +
+          `<p><b>${audienceLabel ? "Built for" : "Security profile"}:</b> ${escapeHtml(profileLabel)}</p>` +
           `<h4>Security controls</h4>${controlsHtml}` +
           (dataHtml ? `<h4>Data</h4>${dataHtml}` : "");
       } catch (error) {
@@ -1659,7 +2978,7 @@
 
     async function loadScore() {
       if (loaded) return;
-      status.textContent = "Loading accessibility score...";
+      status.textContent = loadingMessage();
       try {
         const [appId, response] = await Promise.all([resolveAppId(), fetch(scoresUrl, { cache: "no-store" })]);
         loaded = true;
@@ -1684,11 +3003,344 @@
     }).observe(section, { attributes: true, attributeFilter: ["hidden"] });
   });
 
+  // Tech: any [data-tech-data] section lazy-loads the shared MarinOS tech data
+  // the first time it becomes visible and shows this app's own entry. Missing
+  // data is never shown as zero, "No", or "none": each part says "Not
+  // available", "Not documented" or "Unable to retrieve" instead.
+  document.querySelectorAll("[data-tech-data]").forEach((section) => {
+    const status = section.querySelector("[data-tech-status]");
+    const content = section.querySelector("[data-tech-content]");
+    if (!status || !content) return;
+
+    const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    const base = isLocal ? "http://localhost:8935/" : MARINOS_URL;
+    const ECOSYSTEMS = { npm: "npm", githubactions: "GitHub Actions", pypi: "PyPI", github: "GitHub" };
+    // MarinOS nests several apps' Tech details on one page, so the block's
+    // headings start at data-tech-heading-level (default 3) instead of fixed h3.
+    const level = Math.min(5, Math.max(2, Number(section.dataset.techHeadingLevel) || 3));
+    const heading = (text, extra = 0) => el(`h${level + extra}`, text);
+    // SPDX id -> readable name ("MIT" -> "MIT License"), as reported by GitHub
+    // when the data was collected; unknown ids are shown as they are.
+    let licenseNames = {};
+    const licenseLabel = (id) => licenseNames[id] || id;
+    // Marin App Shell and Marin UI have their own Tech details on MarinOS.
+    let componentLinks = {};
+    let loaded = false;
+
+    const formatDate = (iso) => {
+      const date = new Date(iso);
+      return Number.isNaN(date.getTime())
+        ? ""
+        : date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    };
+    const el = (name, text, className) => {
+      const node = document.createElement(name);
+      if (text !== undefined) node.textContent = text;
+      if (className) node.className = className;
+      return node;
+    };
+    const labelled = (label, value) => {
+      const p = document.createElement("p");
+      p.append(el("strong", `${label}: `), value instanceof Node ? value : document.createTextNode(value));
+      return p;
+    };
+    const note = (text) => el("p", text, "app-help-text");
+    const table = (caption, headers, rows) => {
+      const wrap = el("div", undefined, "app-table-wrap");
+      const t = document.createElement("table");
+      t.append(el("caption", caption, "visually-hidden"));
+      const head = document.createElement("tr");
+      headers.forEach((h) => head.append(Object.assign(el("th", h), { scope: "col" })));
+      const thead = document.createElement("thead");
+      thead.append(head);
+      const tbody = document.createElement("tbody");
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        row.forEach((cell) => {
+          const td = document.createElement("td");
+          if (cell instanceof Node) td.append(cell);
+          else td.textContent = cell;
+          tr.append(td);
+        });
+        tbody.append(tr);
+      });
+      t.append(thead, tbody);
+      wrap.append(t);
+      return wrap;
+    };
+
+    // Mirrors scripts/tech.js: the root package is the repository itself, and
+    // direct dependencies are the ones the root depends on.
+    function dependencyRows(doc) {
+      const relationships = doc.relationships || [];
+      const roots = new Set(relationships.filter((r) => r.relationshipType === "DESCRIBES").map((r) => r.relatedSpdxElement));
+      const direct = new Set(
+        relationships.filter((r) => r.relationshipType === "DEPENDS_ON" && roots.has(r.spdxElementId)).map((r) => r.relatedSpdxElement)
+      );
+      return (doc.packages || [])
+        .filter((pkg) => !roots.has(pkg.SPDXID))
+        .map((pkg) => {
+          const purl = (pkg.externalRefs || []).find((ref) => ref.referenceType === "purl");
+          const eco = purl && /^pkg:([^/]+)\//.exec(purl.referenceLocator);
+          const license = pkg.licenseConcluded || pkg.licenseDeclared;
+          return [
+            pkg.name,
+            pkg.versionInfo || "Not provided",
+            direct.has(pkg.SPDXID) ? "Direct" : "Transitive",
+            eco ? ECOSYSTEMS[eco[1]] || eco[1] : "Not provided",
+            license && license !== "NOASSERTION" && license !== "NONE" ? licenseLabel(license) : "Not provided",
+          ];
+        })
+        .sort((a, b) => (a[2] === b[2] ? a[0].localeCompare(b[0]) : a[2] === "Direct" ? -1 : 1));
+    }
+
+    function renderLanguages(entry) {
+      const frag = document.createDocumentFragment();
+      frag.append(heading("Languages"));
+      const langs = entry.languages;
+      const data = langs && (langs.status === "success" ? langs : langs.lastSuccess);
+      if (data && data.percentages) {
+        frag.append(
+          table("Languages used in the repository", ["Language", "Usage"], Object.entries(data.percentages).map(([name, pct]) => [name, `${pct.toFixed(1)}%`]))
+        );
+        frag.append(note(`Calculated from the code in the repository, as reported by GitHub${langs.status === "success" ? "" : ". The latest update failed, so this is the last successful result"}.`));
+      } else if (langs && langs.status === "none-detected") {
+        frag.append(el("p", "GitHub detected no programming languages in this repository."));
+      } else {
+        frag.append(el("p", "Unable to retrieve language information."));
+      }
+      if (entry.repository) {
+        const link = el("a", entry.repository);
+        link.href = entry.url || `https://github.com/${entry.repository}`;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        frag.append(labelled("Repository", link));
+      }
+      if (data && data.primary) frag.append(labelled("Primary language", data.primary));
+      if (entry.license) frag.append(labelled("License", licenseLabel(entry.license)));
+      if (entry.pushedAt && formatDate(entry.pushedAt)) frag.append(labelled("Last updated", formatDate(entry.pushedAt)));
+      return frag;
+    }
+
+    async function renderDependencies(entry) {
+      const frag = document.createDocumentFragment();
+      frag.append(heading("Dependencies"));
+      const deps = entry.dependencies;
+      if (!deps || deps.status !== "success") {
+        frag.append(el("p", deps ? "Unable to retrieve dependency information." : "Not available"));
+      } else {
+        const total = document.createElement("p");
+        total.append(el("strong", `${deps.total} ${deps.total === 1 ? "dependency" : "dependencies"}`));
+        frag.append(total);
+        if (deps.total === 0) {
+          frag.append(el("p", "GitHub's dependency graph found no software dependencies for this application."));
+        } else {
+          frag.append(el("p", `${deps.direct} direct · ${deps.transitive} transitive`));
+        }
+        if (deps.sbom && deps.sbom.generated && formatDate(deps.sbom.generated)) {
+          frag.append(note(`SBOM generated ${formatDate(deps.sbom.generated)}.`));
+        }
+        if (deps.total > 0 && deps.sbom && deps.sbom.path) {
+          try {
+            const response = await fetch(`${base}${deps.sbom.path}`);
+            if (!response.ok) throw new Error(`SBOM fetch failed: ${response.status}`);
+            frag.append(table("Software dependencies", ["Dependency", "Version", "Relationship", "Ecosystem", "License"], dependencyRows(await response.json())));
+          } catch (error) {
+            console.error(error);
+            frag.append(el("p", "Unable to retrieve the dependency list."));
+          }
+        }
+      }
+
+      frag.append(heading("Bundled components", 1));
+      const bundled = entry.bundled;
+      if (bundled && bundled.status === "success" && bundled.components.length) {
+        frag.append(note("Libraries and assets copied into this application's repository. GitHub's dependency graph does not detect these."));
+        frag.append(
+          table("Bundled components", ["Component", "Version", "License"], bundled.components.map((c) => {
+            let name = c.name;
+            if (componentLinks[c.name]) {
+              name = el("a", c.name);
+              name.href = componentLinks[c.name];
+            }
+            return [name, c.version || "Not provided", c.license || "Not provided"];
+          }))
+        );
+      } else if (bundled && bundled.status === "none-detected") {
+        frag.append(el("p", "None detected."));
+      } else {
+        frag.append(el("p", bundled ? "Unable to retrieve bundled components." : "Not available"));
+      }
+      return frag;
+    }
+
+    function renderSbom(entry, appId) {
+      const frag = document.createDocumentFragment();
+      frag.append(heading("Software bill of materials"));
+      const sbom = entry.dependencies && entry.dependencies.status === "success" ? entry.dependencies.sbom : null;
+      if (!sbom) {
+        frag.append(el("p", "Not available"));
+        return frag;
+      }
+      frag.append(
+        el("p", "This application's software bill of materials (SBOM) is a machine-readable inventory of its software components and dependencies.")
+      );
+      frag.append(labelled("Format", sbom.format));
+      frag.append(labelled("Version", sbom.version));
+      if (sbom.generated && formatDate(sbom.generated)) frag.append(labelled("Generated", formatDate(sbom.generated)));
+      frag.append(labelled("Packages", String(sbom.packages)));
+      frag.append(labelled("Source", sbom.source));
+      const link = el("a", "SBOM file (SPDX JSON)");
+      link.href = `${base}${sbom.path}`;
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      const p = document.createElement("p");
+      p.append(link);
+      frag.append(p);
+      return frag;
+    }
+
+    function renderServices(entry) {
+      const frag = document.createDocumentFragment();
+      frag.append(heading("Services used"));
+      const sv = entry.services;
+      if (sv && sv.status === "documented" && sv.items.length) {
+        frag.append(
+          table(
+            "Outside services this application uses",
+            ["Service", "Purpose", "Called from", "Receives visitor data"],
+            sv.items.map((s) => [s.name, s.purpose, s.runs === "browser" ? "Visitor's browser" : "Build only", s.visitorData ? "Yes" : "No"])
+          )
+        );
+      } else if (sv && sv.status === "documented") {
+        frag.append(el("p", "This application does not use outside services of its own."));
+      } else if (sv && sv.status === "unavailable") {
+        frag.append(el("p", "Unable to retrieve services."));
+      } else {
+        frag.append(el("p", "Not documented"));
+      }
+      frag.append(
+        note("Every MarinOS application also reads MarinOS's shared data files and, for its Updates section, GitHub's public API for recent changes.")
+      );
+      return frag;
+    }
+
+    function renderAi(entry) {
+      const frag = document.createDocumentFragment();
+      frag.append(heading("AI"));
+      const ai = entry.ai;
+      if (ai && ai.status === "documented" && ai.used === true) {
+        frag.append(labelled("Uses AI", "Yes"));
+        if (ai.description) frag.append(el("p", ai.description));
+        if (ai.provider) frag.append(labelled("Provider", ai.provider));
+        if (ai.features && ai.features.length) {
+          const label = document.createElement("p");
+          label.append(el("strong", "Features:"));
+          frag.append(label);
+          const list = document.createElement("ul");
+          ai.features.forEach((feature) => list.append(el("li", feature)));
+          frag.append(list);
+        }
+      } else if (ai && ai.status === "documented" && ai.used === false) {
+        frag.append(labelled("Uses AI", "No"));
+        frag.append(el("p", "This application does not currently use AI as part of the deployed service."));
+      } else if (ai && ai.status === "unavailable") {
+        frag.append(labelled("AI use", "Unable to retrieve"));
+      } else {
+        frag.append(labelled("AI use", "Not documented"));
+        frag.append(el("p", "AI usage has not yet been documented for this application."));
+      }
+      frag.append(note("AI here means AI functionality in the deployed application, not tools used to build it."));
+      return frag;
+    }
+
+    async function resolveAppId() {
+      const header = document.querySelector("marin-app-header");
+      const direct =
+        section.dataset.techAppId || (header ? normalizedAttribute(header, "app-id") : "") || document.body.dataset.appId || "";
+      if (direct) return direct;
+      const response = await fetch(CATALOG_URL);
+      if (!response.ok) throw new Error(`catalog fetch failed: ${response.status}`);
+      const current = window.location.href;
+      const match = (await response.json()).find((item) => {
+        const href = safeLinkUrl(item?.url);
+        return href && current.startsWith(href);
+      });
+      return match ? match.id : "";
+    }
+
+    async function loadTech() {
+      if (loaded) return;
+      status.textContent = loadingMessage();
+      try {
+        const [appId, response] = await Promise.all([resolveAppId(), fetch(isLocal ? `${base}data/tech.json` : TECH_URL, { cache: "no-store" })]);
+        loaded = true;
+        if (response.status === 404) {
+          status.textContent = "Technology information hasn't been collected yet.";
+          return;
+        }
+        if (!response.ok) throw new Error(`tech fetch failed: ${response.status}`);
+        const data = await response.json();
+        licenseNames = (data && data.licenseNames) || {};
+        componentLinks = {};
+        Object.entries((data && data.apps) || {}).forEach(([id, item]) => {
+          if (item && item.kind === "component" && item.name) componentLinks[item.name] = `${base}#tech-${id}`;
+        });
+        const entry = appId && data && data.apps ? data.apps[appId] : null;
+        if (!entry) {
+          status.textContent = "Technology information isn't available for this application yet.";
+          return;
+        }
+        content.replaceChildren(renderLanguages(entry), await renderDependencies(entry), renderSbom(entry, appId), renderServices(entry), renderAi(entry));
+        status.textContent = data.generatedAt && formatDate(data.generatedAt) ? `Data collected ${formatDate(data.generatedAt)}.` : "";
+      } catch (error) {
+        loaded = true;
+        console.error(error);
+        status.textContent = "Unable to retrieve technology information right now.";
+      }
+    }
+
+    if (!section.hidden) loadTech();
+
+    new MutationObserver(() => {
+      if (!section.hidden) loadTech();
+    }).observe(section, { attributes: true, attributeFilter: ["hidden"] });
+  });
+
   // Preserve older initial-page icons that relied on CSS for presentation.
   // New app-owned icons must include the full canonical Lucide attributes.
   document.querySelectorAll(
     ".app-icon svg, .app-card__icon svg, .docs-brand-icon svg, .copy-button svg, .menu-toggle__caret"
   ).forEach(addLucideDefaults);
+
+  // Declarative icons: an element with data-icon="name" gets that bundled Lucide icon before its content, and
+  // data-icon-end="name" gets one after it (the "Learn more" arrow). The icon is decoration, so name the button
+  // with aria-label (and title). Elements added later, such as buttons an app draws with script, are filled in too.
+  // An unknown name is a console warning, never an error, so one typo cannot break a page.
+  function applyDeclarativeIcons(root) {
+    const found = root.nodeType === 1 && root.matches?.("[data-icon], [data-icon-end]") ? [root] : [];
+    root.querySelectorAll?.("[data-icon], [data-icon-end]").forEach((element) => found.push(element));
+    found.forEach((element) => {
+      [["data-icon", "start"], ["data-icon-end", "end"]].forEach(([attribute, position]) => {
+        const name = element.getAttribute(attribute);
+        if (!name || element.querySelector(`:scope > svg[data-shell-icon="${position}"]`)) return;
+        if (!LUCIDE_ICONS[name]) {
+          console.warn(`[Marin App Shell ${SHELL_VERSION}] Unknown icon "${name}".`, element);
+          return;
+        }
+        const icon = createLucideIcon(name);
+        icon.setAttribute("data-shell-icon", position);
+        if (position === "start") element.prepend(icon);
+        else element.append(icon);
+      });
+    });
+  }
+  applyDeclarativeIcons(document);
+  new MutationObserver((records) => {
+    records.forEach((record) => record.addedNodes.forEach((node) => {
+      if (node.nodeType === 1) applyDeclarativeIcons(node);
+    }));
+  }).observe(document.documentElement, { childList: true, subtree: true });
 
   document.documentElement.dataset.marinShellVersion = SHELL_VERSION;
   document.documentElement.dataset.marinUiVersion = MARIN_UI_VERSION;
@@ -1696,6 +3348,8 @@
     version: SHELL_VERSION,
     marinUiVersion: MARIN_UI_VERSION,
     components: Object.freeze(componentDefinitions.map(([name]) => name)),
+    loadingMessage,
+    icon: (name, className = "") => lucideMarkup(name, className),
   });
   document.dispatchEvent(
     new CustomEvent("marinos:shell-ready", {

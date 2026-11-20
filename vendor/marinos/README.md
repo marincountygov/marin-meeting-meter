@@ -1,6 +1,6 @@
-# Marin App Shell 1.5.0
+# Marin App Shell 1.25.1
 
-Pinned Marin UI baseline: 1.19.0.
+Pinned Marin UI baseline: 1.35.1.
 
 This directory is generated. Do not edit files inside an application. Load
 `marinos.css` before app CSS and deferred `marinos.js` before app JavaScript.
@@ -19,7 +19,7 @@ The installer copies this directory to `APP/vendor/marinos/` and synchronizes:
 - `vendor/fonts/Jost-wght.ttf`
 - `vendor/fonts/open-sans/OpenSans-VariableFont_wdth,wght.woff2`
 - `vendor/fonts/open-sans/OFL.txt`
-- `vendor/icons/lucide/{layout-grid,chevron-down,copy,check}.svg` and `LICENSE`
+- `vendor/icons/lucide/{layout-grid,chevron-down,copy,check,panel-left-open,panel-right-open}.svg` and `LICENSE`
 
 Fonts are read from a verified shell `fonts/` cache or a sibling `marin-ui`
 checkout, or from `--font-source /path/to/marin-ui`. Required hashes are in
@@ -34,4 +34,4 @@ geometry, so icon rendering requires no extra runtime request.
 
 `manifest.json` records release/file hashes and managed companion assets.
 `brand-source.json` records the reviewed input provenance. Set the app's
-`platform.shell` to `1.5.0` and validate before publishing.
+`platform.shell` to `1.25.1` and validate before publishing.

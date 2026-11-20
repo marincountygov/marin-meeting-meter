@@ -31,11 +31,19 @@
   --marin-red: #b45340;
 
   --app-bg: #ffffff;
-  --app-bg-soft: #f6f7f8;
+  /* Nearly white on purpose: the accent blue on the old #f6f7f8 was 4.30:1
+     (links directly on the page background, outside a card). #fdfdfe keeps
+     accent links at 4.54:1; cards stay distinct through their border. */
+  --app-bg-soft: #fdfdfe;
   --app-surface: #ffffff;
   --app-text: #1f1f1f;
   --app-muted: #4b5563;
   --app-border: #d8dee4;
+  /* The edge of a form control (text input, date input, select, checkbox, radio).
+     --app-border is a decorative divider (about 1.4:1); a control's boundary must
+     reach 3:1 against what it sits on (WCAG 1.4.11). #737d8c is 4.1-4.2:1 on the
+     page, soft page and card. Pico's own default (#cfd5e2) is only 1.4:1. */
+  --app-control-border: #737d8c;
   --app-focus: #0777cf;
   --app-danger-text: #7f2d20;
   --app-table-row-hover: #e6f2fb;
@@ -47,6 +55,20 @@
   --app-warning: var(--marin-gold);
   --app-danger: var(--marin-red);
   --app-success: #4f5f2f;
+
+  /* Accent-colored TEXT on an accent-tinted background (a current nav link,
+     a hovered menu item, a pressed filter). Raw --app-accent on its own 14%
+     tint is only ~3.6-3.8:1 in light mode, short of AA's 4.5:1, so light mode
+     darkens it (~6.2-6.6:1 on that tint). Dark mode's accent is already a
+     light blue that clears AA on its tint (~7.3:1), so it reverts below. */
+  --app-accent-on-tint: color-mix(in srgb, var(--marin-blue) 70%, black);
+
+  /* Accessibility score bands (Lighthouse's own 90 / 50 cutoffs). Each clears
+     4.5:1 as text and 3:1 as a graphic on --app-surface (#fff): good 5.08,
+     needs-improvement 5.09, poor 5.62. */
+  --app-score-good: #1a7f37;
+  --app-score-needs-improvement: #a85a00;
+  --app-score-poor: #c62828;
 
   --app-font-heading:
     "Jost",
@@ -74,11 +96,33 @@
 
   --pico-font-family-sans-serif: var(--app-font-body);
 
+  /* The solid (main action) button: Marin Blue with white text, 4.6:1. */
+  --app-primary-bg: var(--marin-blue);
+  --app-primary-bg-hover: #005ea8;
+  --app-on-primary: #ffffff;
+
   --pico-primary: var(--marin-blue);
   --pico-primary-hover: #005ea8;
   --pico-primary-focus: rgba(7, 119, 207, 0.25);
   --pico-border-radius: 0.375rem;
   --pico-font-size: 100%;
+}
+
+/* Pico sets its form border color on :root:not([data-theme=dark]) (and, in dark
+   mode, :root:not([data-theme])), which outranks a plain :root rule, so these
+   repeat Pico's selectors to win by source order. */
+:root:not([data-theme=dark]) {
+  --pico-form-element-border-color: var(--app-control-border);
+}
+
+/* Pico's own rule on :root:not([data-theme=dark]) and [data-theme=light] sets the solid button's fill to its stock
+   blue (#0172ad), which is not a brand color and outranks a plain :root rule. Repeat Pico's selectors so a solid
+   button (the main action of a screen) is Marin Blue. Link and text colors keep --pico-primary. */
+:root:not([data-theme=dark]),
+[data-theme=light] {
+  --pico-primary-background: var(--app-primary-bg);
+  --pico-primary-hover-background: var(--app-primary-bg-hover);
+  --pico-primary-inverse: var(--app-on-primary);
 }
 
 @media (min-width: 576px) {
@@ -124,11 +168,18 @@
     --app-text: #f4f7fa;
     --app-muted: #c5ced8;
     --app-border: #3b4652;
+    /* 4.3-5.1:1 on the dark page, soft page, card and input background. */
+    --app-control-border: #7a8896;
     --app-focus: #8fcaff;
     --app-accent: #8fcaff;
     --app-success: #b8d18b;
     --app-danger: #ffb4a8;
     --app-danger-text: #ffb4a8;
+    --app-accent-on-tint: var(--app-accent);
+    /* On --app-surface (#1d252e): good 8.44, needs-improvement 8.78, poor 6.78. */
+    --app-score-good: #5cd68a;
+    --app-score-needs-improvement: #ffb454;
+    --app-score-poor: #ff8a80;
     --app-table-row-hover: #263849;
 
     --pico-background-color: var(--app-bg-soft);
@@ -137,30 +188,32 @@
     --pico-card-background-color: var(--app-surface);
     --pico-card-border-color: var(--app-border);
     --pico-form-element-background-color: #101820;
-    --pico-form-element-border-color: #5b6876;
+    --pico-form-element-border-color: var(--app-control-border);
     --pico-form-element-color: var(--app-text);
+    --app-primary-bg: #8fcaff;
+    --app-primary-bg-hover: #b9dcff;
+    --app-on-primary: #101418;
+
     --pico-primary: #8fcaff;
     --pico-primary-hover: #b9dcff;
     --pico-primary-focus: rgba(143, 202, 255, 0.35);
   }
 
-  /* alpha: raw --app-warning (marin-gold, #e5b53b) is unchanged between
-     themes and only reads at AA contrast on a dark background — the
-     light-mode rule above darkens it procedurally instead, since it needs
-     the opposite treatment in light mode. beta: --app-accent *does* get a
-     proper dark-mode value (#8fcaff) that already clears AA as plain text
-     color, so it reverts to the raw token too rather than carrying over
-     light mode's darkening (which would otherwise make it needlessly
-     muddier against a dark background). live needs no override at all —
-     its light-mode rule already uses the raw --app-success token directly,
-     so it was dark-mode-correct from the start. */
-  .app-status[data-status="alpha"] {
-    color: var(--app-warning);
+  :root:not([data-theme]) {
+    --pico-form-element-border-color: var(--app-control-border);
+    --pico-primary-background: var(--app-primary-bg);
+    --pico-primary-hover-background: var(--app-primary-bg-hover);
+    --pico-primary-inverse: var(--app-on-primary);
   }
+}
 
-  .app-status[data-status="beta"] {
-    color: var(--app-accent);
-  }
+[data-theme=dark] {
+  --app-primary-bg: #8fcaff;
+  --app-primary-bg-hover: #b9dcff;
+  --app-on-primary: #101418;
+  --pico-primary-background: var(--app-primary-bg);
+  --pico-primary-hover-background: var(--app-primary-bg-hover);
+  --pico-primary-inverse: var(--app-on-primary);
 }
 
 html {
@@ -253,8 +306,11 @@ input[type="radio"] {
 }
 
 .marinos-banner {
-  background: var(--marin-black);
-  color: #ffffff;
+  /* Same treatment as .app-footer below: a surface-colored bar with muted text, in both
+     light and dark mode, divided from the header by a line instead of being solid black. */
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-muted);
 }
 
 .marinos-banner__inner {
@@ -270,7 +326,7 @@ input[type="radio"] {
   padding: 0;
   border: 0;
   background: none;
-  color: #ffffff;
+  color: inherit;
   font-family: var(--app-font-heading);
   font-size: 1rem;
   font-weight: 700;
@@ -279,6 +335,7 @@ input[type="radio"] {
 }
 
 .marinos-menu__toggle:hover {
+  color: var(--app-accent);
   text-decoration: underline;
   text-underline-offset: 0.2em;
 }
@@ -415,7 +472,7 @@ input[type="radio"] {
 .menu-panel button:hover,
 .menu-panel button:focus-visible {
   background: color-mix(in srgb, var(--app-accent) 14%, transparent);
-  color: var(--app-accent);
+  color: var(--app-accent-on-tint);
 }
 
 .app-header {
@@ -444,6 +501,17 @@ input[type="radio"] {
 .app-menu-toggle {
   display: none;
   margin: 0;
+  border: 1px solid var(--app-control-border);
+  background: none;
+  color: var(--app-text);
+}
+
+.app-menu-toggle:hover,
+.app-menu-toggle:focus-visible,
+.app-menu-toggle[aria-expanded="true"] {
+  border-color: var(--app-accent);
+  background: none;
+  color: var(--app-accent);
 }
 
 .app-identity {
@@ -555,7 +623,7 @@ a.app-title-row {
 .app-nav a[aria-current="page"],
 .app-nav a:hover {
   background: color-mix(in srgb, var(--app-accent) 14%, transparent);
-  color: var(--app-accent);
+  color: var(--app-accent-on-tint);
 }
 
 .app-main {
@@ -579,6 +647,29 @@ a.app-title-row {
   padding: 1rem;
   margin-bottom: 1rem;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+}
+
+/* Secondary card: the same card, quieter. A smaller icon, title and description,
+   for a second-level list (a department among departments, a help item). */
+.app-card--secondary {
+  padding: 0.875rem 1rem;
+}
+
+.app-card--secondary .app-card__icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.app-card--secondary h3,
+.app-card--secondary h4 {
+  margin-bottom: 0.25rem;
+  font-size: 1.125rem;
+}
+
+.app-card--secondary p {
+  margin-bottom: 0;
+  font-size: 0.875rem;
 }
 
 .app-toolbar {
@@ -694,6 +785,40 @@ a.app-title-row {
   color: var(--app-success);
 }
 
+/* Dark-mode status badges. These sit after the base rules above on purpose: the
+   base rules have the same specificity, so an override placed earlier in the file
+   (as these were before 1.24.0) silently loses and light mode's colors were being
+   used in dark mode. */
+@media (prefers-color-scheme: dark) {
+  /* alpha: the County-approved black-on-gold pairing (solid --app-warning
+     background, black text, about 11:1) instead of gold text on a gold-tinted
+     dark surface; light mode darkens the gold text instead. beta: the raw
+     --app-accent (#8fcaff) already clears AA as text on its tint, so it reverts
+     to that rather than carrying over light mode's darkening. live needs no
+     override: its light-mode rule already uses the raw --app-success token. */
+  .app-status[data-status="alpha"] {
+    background: var(--app-warning);
+    color: var(--marin-black);
+  }
+
+  .app-status[data-status="beta"] {
+    color: var(--app-accent);
+  }
+}
+
+/* The TEST banner: a full-width yellow line directly under the header, for an app or a section that is a design test with
+   data that has not been fully reviewed. The County's black-on-gold pairing (about 11:1) in both themes. Shown in print too. */
+.app-test-banner {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background: var(--app-warning);
+  color: var(--marin-black);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .app-empty {
   padding: 2rem;
   text-align: center;
@@ -701,6 +826,79 @@ a.app-title-row {
   background: var(--app-surface);
   border: 1px dashed var(--app-border);
   border-radius: var(--pico-border-radius);
+}
+
+/* Accessibility score gauge (Google Lighthouse accessibility, 0-100) —
+   a ring whose arc length is the score, with the number inside and the band
+   word beside it. Color is never the only signal: the number and the band word
+   are always printed, and the ring itself is decorative (aria-hidden), with the
+   same information in visually hidden text. Bands match Lighthouse's own:
+   good 90-100, needs-improvement 50-89, poor 0-49. Build one with
+   marinScoreGauge(score) from shared/app-shell.js. A score is automated
+   testing only, not WCAG conformance. */
+.app-score {
+  --app-score-color: var(--app-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  vertical-align: middle;
+}
+
+.app-score[data-band="good"] { --app-score-color: var(--app-score-good); }
+.app-score[data-band="needs-improvement"] { --app-score-color: var(--app-score-needs-improvement); }
+.app-score[data-band="poor"] { --app-score-color: var(--app-score-poor); }
+
+.app-score__ring {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+}
+
+.app-score__track {
+  fill: none;
+  stroke: var(--app-border);
+  stroke-width: 3.5;
+}
+
+.app-score__arc {
+  fill: none;
+  stroke: var(--app-score-color);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+}
+
+.app-score__number {
+  fill: var(--app-text);
+  font-family: var(--app-font-body);
+  font-size: 13px;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.app-score__label {
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.app-score--large {
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.app-score--large .app-score__ring {
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.app-score--large .app-score__number {
+  font-size: 12px;
+}
+
+@media (forced-colors: active) {
+  .app-score__track { stroke: GrayText; }
+  .app-score__arc { stroke: Highlight; }
+  .app-score__number { fill: CanvasText; }
 }
 
 .app-table-wrap {
@@ -835,6 +1033,220 @@ th[aria-sort="descending"] .sort-button::after {
   display: block;
 }
 
+/* Filter layout and the collapsible filter panel. A filter column beside a list of results (the pattern in
+   marin-docs' search/shared/search-layout.css; this owns the layout shell, the fields and the filter groups). A button[data-filter-toggle] at the top of the column hides and shows the panel
+   (app-shell.js sets data-filters on .search-layout and data-open on the panel). Open, the button sits at the
+   column's right edge; hidden, the column shrinks to just the button. Narrow screens stack the column above the
+   results and start hidden. Only this bundle's tokens are used, so it looks the same in every app. */
+.search-layout {
+  display: grid;
+  grid-template-columns: 15.5rem minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+.search-side {
+  position: sticky;
+  top: 1rem;
+  align-self: start;
+}
+
+/* The filter column scrolls on its own. It is as tall as the window at most, and a long panel scrolls inside
+   itself instead of making the whole page scroll before the panel moves. The Filter title and Reset button stay
+   at the top while the fields scroll, on the page background so nothing shows through it. Narrow screens stack the
+   panel above the results and let the page scroll it, so this is wide screens only. The side and bottom padding
+   keeps focus rings from being clipped at the scroll edge. */
+@media (min-width: 851px) {
+  .search-side {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 2rem);
+  }
+
+  .search-side > .search-sidebar {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0 0.25rem 0.25rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .search-side .search-panel-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0.25rem 0 0.5rem;
+    margin-bottom: 0.5rem;
+    background: var(--app-bg-soft);
+  }
+}
+
+.search-results {
+  min-width: 0;
+}
+
+/* Fields and filters inside the filter panel. The same look in every app, so a filter column in one app is
+   recognizable in the next. Order inside the panel: the title row (.search-panel-header, from the shell, with
+   the Reset icon button beside the title), then Search, then the other fields, then the filter groups. */
+.search-input-field {
+  margin-bottom: 1.5rem;
+}
+
+.search-input-field label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.search-input-field input[type="search"] {
+  width: 100%;
+  /* Pico makes search inputs pill-shaped; in the panel the search field matches the selects. */
+  --pico-border-radius: var(--pico-form-element-border-radius, 0.25rem);
+}
+
+.search-facet-group {
+  margin: 0 0 1.5rem;
+  padding: 0;
+  border: 0;
+}
+
+.search-facet-group legend {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.search-facet-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Pico's <li> rule carries 8px of top and bottom padding. The row spacing comes from the small margin instead. */
+.search-facet-list li {
+  margin: 0 0 0.6rem;
+  padding: 0;
+  list-style: none;
+}
+
+.search-facet-list li:last-child {
+  margin-bottom: 0;
+}
+
+.search-facet-list label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--app-text);
+}
+
+/* Checkboxes are 24 px square (WCAG 2.5.8 target size). Pico's bottom margin is removed so rows stay tight. */
+.search-facet-list input[type="checkbox"] {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  margin: 0;
+}
+
+.search-facet-count {
+  color: var(--app-muted);
+  font-size: 0.8rem;
+}
+
+/* A filter is a collapsed group that opens to its checkboxes. */
+.mm-facet-group {
+  margin-bottom: 0.25rem;
+}
+
+.mm-facet-group summary {
+  cursor: pointer;
+  font-weight: 400;
+  padding: 0.5rem 0;
+}
+
+.mm-facet-group summary:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 2px;
+}
+
+/* An open group's checkboxes start a little below its name and leave room before the next group. */
+.mm-facet-group .search-facet-list {
+  margin: 0.25rem 0 0.75rem;
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 1px solid var(--app-border);
+  border-radius: var(--pico-border-radius);
+  background: var(--app-surface);
+  color: var(--app-muted);
+  cursor: pointer;
+}
+
+.filter-toggle:hover {
+  border-color: var(--app-accent);
+  background: color-mix(in srgb, var(--app-accent) 8%, var(--app-surface));
+}
+
+.filter-toggle:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 1px;
+}
+
+.filter-toggle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* SVG elements have no hidden property in script, so app-shell.js toggles the attribute and this honors it. */
+.filter-toggle svg[hidden] {
+  display: none;
+}
+
+.search-layout[data-filters="open"] .filter-toggle {
+  margin-left: auto;
+}
+
+.search-sidebar[data-open="false"] {
+  display: none;
+}
+
+.search-layout[data-filters="closed"] {
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 1rem;
+}
+
+@media (max-width: 850px) {
+  .search-layout,
+  .search-layout[data-filters="closed"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .search-side {
+    position: static;
+  }
+
+  .search-layout[data-filters="open"] .filter-toggle {
+    margin-left: 0;
+  }
+}
+
 /* The Updates feature (app-shell.js's loadUpdates()) renders its
    per-entry copy button with a visible "Copy" label, which doesn't fit
    the plain .copy-button class above — a fixed-size, icon-only 24x24
@@ -864,7 +1276,7 @@ th[aria-sort="descending"] .sort-button::after {
 
 #updates .copy-button:hover {
   border-color: var(--app-accent);
-  color: var(--app-accent);
+  color: var(--app-accent-on-tint);
   background: color-mix(in srgb, var(--app-accent) 8%, var(--app-surface));
 }
 
@@ -983,6 +1395,67 @@ th[aria-sort="descending"] .sort-button::after {
   margin-bottom: 0;
 }
 
+/* A grid with a set number of columns, for a short list of cards that should fill their rows
+   (show a multiple of the columns). One column on a narrow screen. */
+.docs-grid--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.search-results-list.search-results-list--2,
+.search-results-list.search-results-list--3 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.search-results-list.search-results-list--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 48rem) {
+  .docs-grid--3,
+  .search-results-list.search-results-list--2,
+  .search-results-list.search-results-list--3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Dashboard: a tight look at each of a page's tabs, one section per row, set apart by a bottom border. */
+.org-dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.org-dash {
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.org-dash:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.org-dash h2 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.org-dash__list {
+  margin: 0 0 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.org-dash__more {
+  margin: 0.5rem 0 0;
+  font-weight: 600;
+}
+
+.org-dash .org-facts {
+  margin-bottom: 0.5rem;
+}
+
 .docs-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 15.5rem;
@@ -992,6 +1465,13 @@ th[aria-sort="descending"] .sort-button::after {
 .docs-content,
 .content {
   min-width: 0;
+}
+
+/* The page's content is a bordered box with no shadow, the same as a Marin
+   Learn note. Pico gives <article> a shadow; this removes it. */
+.content {
+  border: 1px solid var(--app-border);
+  box-shadow: none;
 }
 
 .docs-breadcrumb {
@@ -1250,7 +1730,7 @@ th[aria-sort="descending"] .sort-button::after {
 .topic-filters a[aria-current="page"] {
   border-color: var(--app-accent);
   background: color-mix(in srgb, var(--app-accent) 14%, var(--app-surface));
-  color: var(--app-accent);
+  color: var(--app-accent-on-tint);
   font-weight: 700;
 }
 
@@ -1285,44 +1765,59 @@ th[aria-sort="descending"] .sort-button::after {
   position: sticky;
   top: 1rem;
   align-self: start;
-  padding-left: 1rem;
-  border-left: 2px solid var(--app-border);
+  padding: 1.25rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--pico-border-radius);
+  background: var(--app-surface);
 }
 
 .toc h2 {
   margin: 0 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--app-border);
   font-size: 1rem;
 }
 
 .toc ul {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .toc li {
-  margin: 0.4rem 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .toc a {
-  color: var(--app-muted);
+  display: block;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--pico-border-radius);
+  color: var(--app-text);
   font-size: 0.9rem;
   text-decoration: none;
 }
 
 .toc a[aria-current="location"] {
-  color: var(--app-accent);
+  color: var(--app-text);
   font-weight: 700;
+}
+
+.toc a:hover,
+.toc a:focus-visible {
+  background: var(--app-bg-soft);
+  color: var(--app-accent-on-tint);
 }
 
 @media (max-width: 850px) {
   .toc {
     position: static;
     order: -1;
-    padding: 1rem;
-    border: 1px solid var(--app-border);
-    border-radius: var(--pico-border-radius);
-    background: var(--app-surface);
   }
 }
 
@@ -1626,7 +2121,7 @@ th[aria-sort="descending"] .sort-button::after {
   stroke-linejoin: round;
 }
 
-/* Marin App Shell 1.5.0: component integration only.
+/* Marin App Shell 1.25.1: component integration only.
    General visual rules come from the locked, unmodified Marin UI input. */
 marin-os-banner,
 marin-app-header,
@@ -1739,103 +2234,540 @@ marin-app-footer {
   }
 }
 
-/* App Shell 1.2.2 compatibility override. Marin UI 1.19.0 uses gold text on
-   a tinted dark surface for Alpha. Use the County-approved black-on-gold
-   pairing here until the shared UI baseline adopts the same treatment. */
-@media (prefers-color-scheme: dark) {
-  .app-status[data-status="alpha"] {
-    background: var(--app-warning);
-    color: var(--marin-black);
+/* The Feedback button hides while the footer is on screen (see MarinAppFeedback in
+   marinos.js) so it cannot cover footer links. It stays focusable and appears when
+   focused, so keyboard users can still reach it. */
+.app-feedback {
+  transition: opacity 0.15s ease;
+}
+
+.app-feedback[data-over-footer]:not(:focus) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-feedback {
+    transition: none;
   }
 }
 
-/* App Shell 1.4.0 compatibility addition. The accessibility score gauge
-   (.app-score) is defined in Marin UI 1.21.0; the shell stays pinned to Marin
-   UI 1.19.0, so it carries these rules itself until the pinned baseline is
-   refreshed. Keep in step with marin-ui's shared/app-brand.css. */
-:root {
-  --app-score-good: #1a7f37;
-  --app-score-needs-improvement: #a85a00;
-  --app-score-poor: #c62828;
-}
+/* Filter panel, narrow screens: the filter button sits beside the first element of the results (the tab row)
+   instead of on a row of its own, so the button does not add a band of empty space above the page. The panel,
+   when open, takes the full row under them. */
+@media (max-width: 850px) {
+  .search-layout,
+  .search-layout[data-filters="closed"] {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 0.5rem;
+    row-gap: 0;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --app-score-good: #5cd68a;
-    --app-score-needs-improvement: #ffb454;
-    --app-score-poor: #ff8a80;
+  .search-layout > .search-side,
+  .search-layout > .search-results {
+    display: contents;
+  }
+
+  .search-layout .filter-toggle {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0;
+  }
+
+  .search-layout > .search-results > :first-child {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .search-layout > .search-results > :not(:first-child) {
+    grid-column: 1 / -1;
+  }
+
+  .search-layout .search-sidebar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    padding-top: 1rem;
   }
 }
 
-/* Accessibility score gauge (Google Lighthouse accessibility, 0-100) —
-   a ring whose arc length is the score, with the number inside and the band
-   word beside it. Color is never the only signal: the number and the band word
-   are always printed, and the ring itself is decorative (aria-hidden), with the
-   same information in visually hidden text. Bands match Lighthouse's own:
-   good 90-100, needs-improvement 50-89, poor 0-49. Build one with
-   marinScoreGauge(score) from shared/app-shell.js. A score is automated
-   testing only, not WCAG conformance. */
-.app-score {
-  --app-score-color: var(--app-muted);
-  display: inline-flex;
+/* Filter panel heading: the visible name of the panel (the panel's aria-labelledby points at it) with the
+   Reset button on the same line, so neither takes a row of its own. */
+.search-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+}
+
+.search-panel-title {
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: inherit;
+  color: inherit;
+}
+
+/* Action buttons: secondary buttons that do something other than submit a form (Copy, Link, CSV, RSS, Reset, PNG).
+   Same quiet treatment as the .copy-button on a listing: no fill, muted text, a border only on hover. Only a button
+   that submits a form is the solid blue or dark one. A row of them is a .action-toolbar made of .action-group
+   clusters, like a Bootstrap button toolbar; the .action-search field can sit at the end of the row. */
+.action-toolbar {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-  vertical-align: middle;
+  margin: 0 0 1rem;
 }
 
-.app-score[data-band="good"] { --app-score-color: var(--app-score-good); }
-.app-score[data-band="needs-improvement"] { --app-score-color: var(--app-score-needs-improvement); }
-.app-score[data-band="poor"] { --app-score-color: var(--app-score-poor); }
-
-.app-score__ring {
-  flex: none;
-  width: 2rem;
-  height: 2rem;
+.action-group {
+  display: inline-flex;
+  width: auto;
+  margin: 0;
+  border: 1px solid var(--app-border);
+  border-radius: var(--pico-border-radius);
 }
 
-.app-score__track {
+.action-group[hidden],
+.action-group:not(:has(> :not([hidden]))) {
+  display: none;
+}
+
+.action-button,
+a.action-button[role="button"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  width: auto;
+  min-height: 2.25rem;
+  margin: 0;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--pico-border-radius);
+  background: none;
+  box-shadow: none;
+  color: var(--app-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.action-button[hidden],
+a.action-button[role="button"][hidden] {
+  display: none;
+}
+
+.action-button:hover {
+  border-color: var(--app-accent);
+  background: none;
+  color: var(--app-accent);
+}
+
+.action-button:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 1px;
+}
+
+.action-button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--app-accent) 14%, var(--app-surface));
+  color: var(--app-accent-on-tint);
+}
+
+.action-button[aria-disabled="true"],
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-button svg {
+  width: 1rem;
+  height: 1rem;
   fill: none;
-  stroke: var(--app-border);
-  stroke-width: 3.5;
-}
-
-.app-score__arc {
-  fill: none;
-  stroke: var(--app-score-color);
-  stroke-width: 3.5;
+  stroke: currentColor;
+  stroke-width: 2;
   stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.app-score__number {
-  fill: var(--app-text);
-  font-family: var(--app-font-body);
-  font-size: 13px;
-  font-weight: 700;
-  text-anchor: middle;
-  dominant-baseline: central;
+/* An icon the shell draws from data-icon or data-icon-end on a solid button (the Next of a step flow) is the same
+   1rem size and sits beside the words, the same as on an action button. */
+.primary[data-icon],
+.primary[data-icon-end] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
-.app-score__label {
-  font-weight: 700;
-  color: var(--app-text);
+.primary > svg[data-shell-icon] {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.app-score--large {
-  flex-direction: column;
+/* Action buttons carry an icon and no visible text; the name is the aria-label (and the title, for hover). */
+.action-button:has(> svg:only-child) {
+  min-width: 2.25rem;
+  padding-inline: 0.5rem;
+}
+
+/* Inside a group the buttons share the group's border: no border of their own, a tint on hover, a line between. */
+.action-group > .action-button {
+  border-color: transparent;
+  border-radius: 0;
+}
+
+.action-group > .action-button:first-child {
+  border-top-left-radius: calc(var(--pico-border-radius) - 1px);
+  border-bottom-left-radius: calc(var(--pico-border-radius) - 1px);
+}
+
+.action-group > .action-button:last-child {
+  border-top-right-radius: calc(var(--pico-border-radius) - 1px);
+  border-bottom-right-radius: calc(var(--pico-border-radius) - 1px);
+}
+
+.action-group > :not([hidden]) ~ .action-button:not([hidden]) {
+  border-left-color: var(--app-border);
+}
+
+.action-group > .action-button:hover {
+  background: color-mix(in srgb, var(--app-accent) 8%, var(--app-surface));
+  color: var(--app-accent-on-tint);
+}
+
+.action-group > .action-button:focus-visible {
+  outline-offset: -2px;
+}
+
+/* The icon buttons under a listing (.copy-button: Copy, Show on map, Directions) cluster the same way. */
+.action-group > .copy-button {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid transparent;
+  border-radius: 0;
+  background: none;
+  color: var(--app-muted);
+}
+
+.action-group > .copy-button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.action-group > .copy-button:first-child {
+  border-top-left-radius: calc(var(--pico-border-radius) - 1px);
+  border-bottom-left-radius: calc(var(--pico-border-radius) - 1px);
+}
+
+.action-group > .copy-button:last-child {
+  border-top-right-radius: calc(var(--pico-border-radius) - 1px);
+  border-bottom-right-radius: calc(var(--pico-border-radius) - 1px);
+}
+
+.action-group > :not([hidden]) ~ .copy-button {
+  border-left-color: var(--app-border);
+}
+
+.action-group > .copy-button:hover {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--app-accent) 8%, var(--app-surface));
+  color: var(--app-accent-on-tint);
+}
+
+.action-group > :not([hidden]) ~ .copy-button:hover {
+  border-left-color: var(--app-border);
+}
+
+.action-group > .copy-button:focus-visible {
+  outline-offset: -2px;
+}
+
+.action-group > .copy-button.is-copied {
+  color: var(--app-success);
+}
+
+/* A spaced group: separate bordered buttons with a gap and a 44 px target, for controls pressed often or on touch
+   (a Previous and Next pair). Use it instead of a joined group when people with limited fine motor control, or
+   wide fingers, could press the wrong one. */
+.action-group.action-group--spaced {
+  gap: 0.75rem;
+  border: 0;
+  border-radius: 0;
+}
+
+.action-group.action-group--spaced > .action-button,
+.action-group.action-group--spaced > :not([hidden]) ~ .action-button:not([hidden]) {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--pico-border-radius);
+}
+
+.action-group.action-group--spaced > .action-button:hover {
+  border-color: var(--app-accent);
+}
+
+/* A select that belongs to the group (a format picker beside Copy) is borderless and as tall as the buttons. */
+.action-group select {
+  width: auto;
+  min-height: 2.25rem;
+  margin: 0;
+  padding-block: 0.25rem;
+  border-color: transparent;
+  background-color: transparent;
+  box-shadow: none;
+  color: var(--app-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* The always-visible text filter at the end of a toolbar row. Its label is visually hidden and its wrapper is a
+   search landmark, so it keeps a name without a stacked label. */
+.action-search {
+  flex: 1 1 12rem;
+  min-width: 10rem;
+  max-width: 20rem;
+  margin: 0;
+}
+
+.action-search input[type="search"] {
+  width: 100%;
+  height: calc(2.25rem + 2px);
+  margin: 0;
+  padding-block: 0;
+}
+
+@media (max-width: 600px) {
+  .action-search {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}
+
+/* Danger: an action that deletes or discards. Quiet until pointed at, then red, so it is never mistaken for the safe choice. */
+.action-button.is-danger:hover,
+.action-group > .action-button.is-danger:hover {
+  border-color: var(--app-danger);
+  background: none;
+  color: var(--app-danger-text);
+}
+
+/* A button that opens a menu (the Share and Download menus): the caret sits after the icon. */
+.action-button.menu-toggle {
   gap: 0.25rem;
 }
 
-.app-score--large .app-score__ring {
-  width: 4.5rem;
-  height: 4.5rem;
+/* Dialog buttons: right-aligned, with words (Cancel, Close, Save). One solid button at most, the one that submits. */
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
 }
 
-.app-score--large .app-score__number {
-  font-size: 12px;
+.dialog-actions > .action-button {
+  min-height: 2.75rem;
+  padding-inline: 1rem;
+  border-color: var(--app-border);
 }
 
-@media (forced-colors: active) {
-  .app-score__track { stroke: GrayText; }
-  .app-score__arc { stroke: Highlight; }
-  .app-score__number { fill: CanvasText; }
+.dialog-actions > button:not(.action-button) {
+  width: auto;
+  margin: 0;
+}
+
+/* Tabs: a row of buttons that switch the view (List, Calendar, Map). The chosen tab is solid, with text and
+   color together, never color alone. Use role="tablist" on .tab-list and role="tab" with aria-selected on each. */
+.tab-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.tab-button {
+  width: auto;
+  min-height: 2.25rem;
+  margin: 0;
+  padding: 0.375rem 0.75rem;
+  border: 0;
+  border-radius: var(--pico-border-radius);
+  background: none;
+  box-shadow: none;
+  color: var(--app-muted);
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.tab-button:hover {
+  color: var(--app-accent);
+}
+
+.tab-button:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 1px;
+}
+
+.tab-button[aria-selected="true"],
+.tab-button[aria-pressed="true"] {
+  background: var(--app-accent);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Dark mode's accent is a light blue, where white text is 1.7:1; dark text is 10.6:1. */
+@media (prefers-color-scheme: dark) {
+  .tab-button[aria-selected="true"],
+  .tab-button[aria-pressed="true"] {
+    color: #101418;
+  }
+}
+
+/* Filter chips: small toggle buttons that narrow a list (Required, Permitted). aria-pressed says which are on;
+   the pressed chip is tinted and bold, not only a different color. */
+.chip-button {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  min-height: 2rem;
+  margin: 0;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  background: none;
+  box-shadow: none;
+  color: var(--app-muted);
+  font-size: 0.875rem;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.chip-button:hover {
+  border-color: var(--app-accent);
+  color: var(--app-accent);
+}
+
+.chip-button:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 1px;
+}
+
+.chip-button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--app-accent) 14%, var(--app-surface));
+  color: var(--app-accent-on-tint);
+  font-weight: 700;
+}
+
+/* A row of filter chips. Put role="group" and an aria-label on it. Pico turns a role="group" into one joined,
+   full-width control, so this puts each chip back to its own size. */
+.chip-group,
+.chip-group[role="group"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  width: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.chip-group > .chip-button {
+  flex: 0 0 auto;
+  width: auto;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+}
+
+.chip-group > .chip-button:hover,
+.chip-group > .chip-button[aria-pressed="true"] {
+  border-color: var(--app-accent);
+}
+
+/* Sortable column headers: a button that reads as the header text. The th carries aria-sort; the arrow follows it. */
+.sort-button {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sort-button:hover,
+.sort-button:focus-visible {
+  text-decoration: underline;
+}
+
+th[aria-sort="ascending"] .sort-button::after {
+  content: " \25b2";
+}
+
+th[aria-sort="descending"] .sort-button::after {
+  content: " \25bc";
+}
+
+/* A visually hidden form control stays 1 px. Pico makes every input as wide as its row and at least 44 px tall, with a
+   selector too specific for .visually-hidden to win, so a hidden file input made the page wider than the window. */
+input.visually-hidden,
+select.visually-hidden,
+textarea.visually-hidden {
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+/* Upload (marinUpload): a card with a dashed border holds the heading, one sentence of help and the Browse files button.
+   While a file is dragged over the page, a full-page layer says where to drop it. */
+.upload-panel {
+  border: 2px dashed var(--app-border);
+}
+
+.upload-drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 997;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  pointer-events: none;
+}
+
+.upload-drop-overlay[data-active="true"] {
+  display: flex;
+}
+
+.upload-drop-overlay__inner {
+  padding: 1.5rem;
+  border: 2px dashed #ffffff;
+  border-radius: var(--pico-border-radius);
+  background: rgba(0, 0, 0, 0.7);
+  font-weight: 700;
 }
