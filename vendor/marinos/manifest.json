@@ -1,8 +1,8 @@
 {
   "schema": 1,
   "name": "Marin App Shell",
-  "shellVersion": "1.25.1",
-  "marinUiVersion": "1.35.1",
+  "shellVersion": "2.6.0",
+  "marinUiVersion": "1.41.0",
   "installPath": "vendor/marinos",
   "fontPathContract": [
     "../fonts/Jost-wght.ttf",
@@ -246,20 +246,36 @@
   },
   "files": {
     "README.md": {
-      "bytes": 1607,
-      "sha256": "bb3ad5e0627df4126292b409da2e1b9272c3e64697b4b259a9d33f454ef360b5"
+      "bytes": 1605,
+      "sha256": "afb3aa86db8fa6a0bef35a43db95c9f9dcab5a3c4bab3975689db2cf3462f2fb"
     },
     "audit-buttons.py": {
       "bytes": 5813,
       "sha256": "7d9e9ed92ca27e78b64526c635301bb49f5302c0281bb71fe6dbe4b0aacaaba8"
     },
+    "audit-filter-column.py": {
+      "bytes": 10333,
+      "sha256": "a4537da71a460b306614964863812d74ab7722e47e4fe0c8a210d588d21f00ca"
+    },
+    "audit-h1.py": {
+      "bytes": 4156,
+      "sha256": "4ed80dd83af9e1cdb13ba2ac120f6540b111b6147a06fbc317e1eb885a1e01ed"
+    },
     "audit-shared-helpers.py": {
       "bytes": 3754,
       "sha256": "efab1285ae085aee08bd82c4641ef4c625eb01f9d8ec1bd92f313359eb7dd477"
     },
+    "audit-steps.py": {
+      "bytes": 4244,
+      "sha256": "ce95293e63a167e0d4d80241bc526742f14c5afef6c536637f5ddb10c0372933"
+    },
     "brand-source.json": {
-      "bytes": 10297,
-      "sha256": "b4349c221a681ddee9a80f1dc1a3946786deb6e2a5fd68ba2816a4b2254d5efc"
+      "bytes": 10511,
+      "sha256": "90078690070f54e97a14a2b52d59f35b51dbfa1999d2fd6b17b73a1ebf12648e"
+    },
+    "filter-panel.schema.json": {
+      "bytes": 16075,
+      "sha256": "e0d536d03ec220ee7bf670aafc0d07204411fd587f8f9511afe7115430cf1b62"
     },
     "icons/lucide/LICENSE": {
       "bytes": 3208,
@@ -450,12 +466,12 @@
       "sha256": "01cd5ffb3a528c219a86e49a814c6c53bd8a69b9a3c305dd237074ba1c811af7"
     },
     "marinos.css": {
-      "bytes": 146011,
-      "sha256": "d7a248f0073e26375f9f74a3ae13471357db7377f4b89314995630df8fcd8e1d"
+      "bytes": 154591,
+      "sha256": "63aca4540dad908791ae18cf235a750406571a6180538d2541f0021ce8d72a1d"
     },
     "marinos.js": {
-      "bytes": 160728,
-      "sha256": "f25816cff829d9801f3869d2652e5a6091c067f74a4fd6438dde7193b83545b0"
+      "bytes": 225443,
+      "sha256": "bb7d5c36286336fcf2cb98661000428e63a871a548fcebb06d4508baa352af55"
     }
   }
 }

@@ -48,6 +48,11 @@
   --app-danger-text: #7f2d20;
   --app-table-row-hover: #e6f2fb;
   --app-max-width: 1280px;
+
+  /* An h1 has one of two sizes. The app title is the h1 in the app header. The page title is the h1 of a page's own
+     content (a document, a guide, a report, a landing page). Nothing else sets an h1 size. */
+  --app-h1-app: clamp(1.35rem, 2vw, 1.75rem);
+  --app-h1-page: clamp(1.75rem, 3vw, 2.25rem);
   --docs-max-width: var(--app-max-width);
 
   --app-brand: var(--marin-black);
@@ -305,6 +310,22 @@ input[type="radio"] {
   border-radius: 50%;
 }
 
+/* Windows forced colors. Pico draws a checked checkbox or radio as a filled background with a white mark. Forced colors
+   replace the background, so the mark has nothing to show against and a checked box looks unchecked. In that mode the
+   browser's own control is used: it is drawn in system colors and always shows whether it is checked. */
+@media (forced-colors: active) {
+  input[type="checkbox"],
+  input[type="radio"] {
+    appearance: auto;
+  }
+
+  input[type="checkbox"]:checked,
+  input[type="checkbox"]:indeterminate,
+  input[type="radio"]:checked {
+    background-image: none;
+  }
+}
+
 .marinos-banner {
   /* Same treatment as .app-footer below: a surface-colored bar with muted text, in both
      light and dark mode, divided from the header by a line instead of being solid black. */
@@ -372,6 +393,32 @@ input[type="radio"] {
 .marinos-menu__status {
   flex: 0 0 auto;
   margin-left: auto;
+}
+
+/* Large screens: the MarinOS menu opens as a wide panel with the apps in a horizontal grid and more room between
+   them. It is the same links and the same disclosure (button, Escape, focus order) as the narrow list. */
+@media (min-width: 1024px) {
+  .marinos-menu__panel:not([hidden]) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14.5rem, 1fr));
+    gap: 0.5rem 1.5rem;
+    width: min(60rem, calc(100vw - 2rem));
+    padding: 1.25rem 1.5rem;
+  }
+
+  /* .menu-panel a is defined further down with the same weight, so this names both classes to win. */
+  .menu-panel.marinos-menu__panel a {
+    width: auto;
+    padding: 0.75rem 1rem;
+  }
+
+  .marinos-menu__panel .marinos-menu__all {
+    grid-column: 1 / -1;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--app-border);
+    border-radius: 0;
+  }
 }
 
 .marinos-menu__all {
@@ -506,6 +553,12 @@ input[type="radio"] {
   color: var(--app-text);
 }
 
+/* An app with nothing in its header menu (no tabs of its own) has no Menu button; About, Updates and the other standard pages are in the footer. */
+.app-menu-toggle[hidden],
+.app-nav[hidden] {
+  display: none;
+}
+
 .app-menu-toggle:hover,
 .app-menu-toggle:focus-visible,
 .app-menu-toggle[aria-expanded="true"] {
@@ -588,7 +641,7 @@ a.app-title-row {
 
 .app-title {
   margin: 0;
-  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  font-size: var(--app-h1-app);
   line-height: 1.2;
 }
 
@@ -632,7 +685,7 @@ a.app-title-row {
   margin-right: auto;
   padding-top: 2rem;
   padding-right: 1rem;
-  padding-bottom: 3rem;
+  padding-bottom: 4.5rem;
   padding-left: 1rem;
 }
 
@@ -1066,6 +1119,10 @@ th[aria-sort="descending"] .sort-button::after {
   .search-side > .search-sidebar {
     flex: 1 1 auto;
     min-height: 0;
+    /* A field tabbed into view stops below the pinned title row, not under it (WCAG 2.2 Focus Not Obscured).
+       The shell sets --filter-header-height to the title row's real height. */
+    scroll-padding-top: calc(var(--filter-header-height, 3.5rem) + 0.5rem);
+    scroll-padding-bottom: 0.5rem;
     padding: 0 0.25rem 0.25rem;
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -1085,6 +1142,22 @@ th[aria-sort="descending"] .sort-button::after {
   min-width: 0;
 }
 
+/* Search results that show where the words are: a line of the text under a result, and the same words marked on the page the
+   result opens (marinSearchSnippet and marinSearchHighlight in the shell). Never the browser's default yellow mark. */
+mark.search-hit {
+  padding: 0 0.1em;
+  border-radius: 0.15em;
+  background: color-mix(in srgb, var(--app-accent) 22%, var(--app-surface));
+  color: var(--app-text);
+}
+
+.search-snippet {
+  display: block;
+  color: var(--app-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
 /* Fields and filters inside the filter panel. The same look in every app, so a filter column in one app is
    recognizable in the next. Order inside the panel: the title row (.search-panel-header, from the shell, with
    the Reset icon button beside the title), then Search, then the other fields, then the filter groups. */
@@ -1097,6 +1170,12 @@ th[aria-sort="descending"] .sort-button::after {
   margin-bottom: 0.35rem;
   font-weight: 700;
   font-size: 0.9rem;
+}
+
+.search-sidebar select,
+.search-input-field input[type="search"],
+.search-input-field input[type="date"] {
+  width: 100%;
 }
 
 .search-input-field input[type="search"] {
@@ -1139,6 +1218,10 @@ th[aria-sort="descending"] .sort-button::after {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  /* The whole row is the click target, at least 24 px tall (WCAG 2.5.8). */
+  min-height: 1.5rem;
+  width: 100%;
+  cursor: pointer;
   margin-bottom: 0;
   font-size: 0.875rem;
   font-weight: 400;
@@ -1146,11 +1229,17 @@ th[aria-sort="descending"] .sort-button::after {
 }
 
 /* Checkboxes are 24 px square (WCAG 2.5.8 target size). Pico's bottom margin is removed so rows stay tight. */
-.search-facet-list input[type="checkbox"] {
+.search-facet-list input[type="checkbox"],
+.search-facet-list input[type="radio"] {
   width: 1.5rem;
   height: 1.5rem;
   flex: none;
   margin: 0;
+}
+
+/* A choice listed under another (a division under its department): indented, with the same row spacing. */
+.search-facet-list .search-facet-children {
+  margin: 0.6rem 0 0 1.5rem;
 }
 
 .search-facet-count {
@@ -1174,6 +1263,11 @@ th[aria-sort="descending"] .sort-button::after {
   outline-offset: 2px;
 }
 
+/* A group inside a group (Place, then Districts) is indented, so it reads as part of the one above. */
+.mm-facet-group .mm-facet-group {
+  margin-left: 0.75rem;
+}
+
 /* An open group's checkboxes start a little below its name and leave room before the next group. */
 .mm-facet-group .search-facet-list {
   margin: 0.25rem 0 0.75rem;
@@ -1192,6 +1286,10 @@ th[aria-sort="descending"] .sort-button::after {
   background: var(--app-surface);
   color: var(--app-muted);
   cursor: pointer;
+}
+
+.filter-toggle[hidden] {
+  display: none;
 }
 
 .filter-toggle:hover {
@@ -1221,6 +1319,16 @@ th[aria-sort="descending"] .sort-button::after {
 
 .search-layout[data-filters="open"] .filter-toggle {
   margin-left: auto;
+}
+
+/* Windows forced colors: the filter column's focus rings use system colors so they stay visible. */
+@media (forced-colors: active) {
+  .mm-facet-group summary:focus-visible,
+  .filter-toggle:focus-visible,
+  .search-sidebar :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
 }
 
 .search-sidebar[data-open="false"] {
@@ -1651,12 +1759,10 @@ th[aria-sort="descending"] .sort-button::after {
 }
 
 .hero h1,
-.doc-title {
+.doc-title,
+.page-title {
+  font-size: var(--app-h1-page);
   line-height: 1.12;
-}
-
-.hero h1 {
-  font-size: clamp(2rem, 4vw, 3.5rem);
 }
 
 .lede,
@@ -2066,6 +2172,241 @@ th[aria-sort="descending"] .sort-button::after {
   }
 }
 
+/* Steps layout: a workflow of steps, one shown at a time, listed in the collapsible left column
+   (the filter column's `.search-layout` / `.search-sidebar`). A step's state is always a word ("Completed",
+   "Current", "Up next"), never color or a shape alone: color, weight and a bar on the left edge only
+   reinforce it. There are no circles, no numbers inside shapes and no icons in the list. Completed means
+   earlier than the current step; nothing is saved. app-shell.js (`nav[data-steps]`) sets data-step-state. */
+/* Pico gives a nav's first list a negative left margin (nav ol:first-of-type); the reset has to outrank it. */
+.steps ol,
+.steps ol:first-of-type,
+.steps ol:last-of-type {
+  display: block;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  display: block;
+  margin: 0 0 0.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.steps a {
+  display: block;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 4px solid var(--app-control-border);
+  border-radius: 0 var(--pico-border-radius) var(--pico-border-radius) 0;
+  color: var(--app-muted);
+  text-decoration: none;
+}
+
+.steps a:hover {
+  background: var(--app-bg-soft);
+  text-decoration: underline;
+}
+
+.steps .step-name,
+.steps .step-state {
+  display: block;
+}
+
+.steps .step-state {
+  font-size: 0.875rem;
+}
+
+.steps a[data-step-state="complete"] {
+  border-left-color: var(--app-success);
+  color: var(--app-text);
+}
+
+.steps a[data-step-state="complete"] .step-state {
+  color: var(--app-success);
+}
+
+.steps a[aria-current="step"] {
+  border-left-color: var(--app-accent);
+  background: color-mix(in srgb, var(--app-accent) 14%, var(--app-surface));
+  color: var(--app-accent-on-tint);
+  font-weight: 700;
+}
+
+.steps a[aria-current="step"] .step-state {
+  font-weight: 400;
+}
+
+.steps-progress[hidden] {
+  display: none;
+}
+
+.steps-progress {
+  margin: 0 0 1rem;
+}
+
+.steps-progress p {
+  margin: 0 0 0.25rem;
+  font-weight: 700;
+}
+
+.steps-progress progress {
+  display: block;
+  width: 100%;
+  height: 0.5rem;
+  margin: 0;
+  accent-color: var(--app-accent);
+}
+
+/* With the steps column open on a wide screen the highlighted step already says where you are, so the line
+   is kept for screen readers only. */
+@media (min-width: 851px) {
+  .search-layout[data-filters="open"] .steps-progress {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+.step[hidden] {
+  display: none;
+}
+
+.step > h2 {
+  margin-top: 0;
+}
+
+.step:not([hidden]) ~ .step:not([hidden]) {
+  margin-top: 2.5rem;
+}
+
+/* Each part of a step (what to do, a field, an action) is a bordered box, the look of the Marin Learn notes. */
+.step-box {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--pico-border-radius);
+  background: var(--app-surface);
+  scroll-margin-top: 1rem;
+}
+
+.step-box > :last-child {
+  margin-bottom: 0;
+}
+
+.step-box h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1.5rem;
+}
+
+@media (max-width: 576px) {
+  .step-box {
+    padding: 1rem;
+  }
+}
+
+/* "On this page" is a right-hand column on wide screens and sits above the step on narrow ones. */
+.steps-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 14rem;
+  column-gap: 2rem;
+  align-items: start;
+}
+
+.steps-main {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.steps-toc-holder {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: stretch;
+}
+
+.steps-toc-holder:empty {
+  display: none;
+}
+
+@media (max-width: 850px) {
+  .steps-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .steps-main,
+  .steps-toc-holder {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .steps-toc-holder {
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Pico makes every nav a flex row; the list's heading sits above its links. */
+.steps-toc.toc {
+  display: block;
+}
+
+/* Next is the solid main action and ends with an arrow. Previous is a quiet icon button, 44 px square. */
+.steps-pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0 0;
+}
+
+.steps-pager .action-button,
+.steps-pager .action-button:has(> svg:only-child) {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  margin: 0;
+}
+
+.steps-pager .primary {
+  margin: 0;
+}
+
+.steps-pager [hidden] {
+  display: none;
+}
+
+/* Forced colors drop background and border colors: the state word and bold weight carry the meaning, and the
+   current step keeps a visible edge. */
+@media (forced-colors: active) {
+  .steps a {
+    border-left-color: CanvasText;
+  }
+
+  .steps a[aria-current="step"] {
+    border-left-color: Highlight;
+    outline: 1px solid Highlight;
+  }
+}
+
+@media print {
+  .steps,
+  .steps-progress,
+  .steps-pager {
+    display: none !important;
+  }
+
+  .step[hidden] {
+    display: block !important;
+  }
+
+  .steps-body {
+    display: block;
+  }
+}
+
 /* Reviewed corrections to the pinned Marin UI 1.19.0 input.
    Remove these only after a reviewed upstream update includes equivalent fixes.
    SVG paint/stroke declarations are removed by build.py's strict adapter so
@@ -2121,7 +2462,7 @@ th[aria-sort="descending"] .sort-button::after {
   stroke-linejoin: round;
 }
 
-/* Marin App Shell 1.25.1: component integration only.
+/* Marin App Shell 2.6.0: component integration only.
    General visual rules come from the locked, unmodified Marin UI input. */
 marin-os-banner,
 marin-app-header,
