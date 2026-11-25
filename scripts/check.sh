@@ -30,6 +30,8 @@ python3 "$ROOT_DIR/vendor/marinos/audit-buttons.py" "$ROOT_DIR" --fail
 python3 "$ROOT_DIR/vendor/marinos/audit-shared-helpers.py" "$ROOT_DIR" --fail
 # An h1 has one of two sizes (Marin UI 1.41.0); this lists app CSS that sets its own size and must list nothing.
 python3 "$ROOT_DIR/vendor/marinos/audit-h1.py" "$ROOT_DIR" --fail
+# Card styles come from Marin UI (1.42.0); this lists copies and redrawn card surfaces and must list nothing.
+python3 "$ROOT_DIR/vendor/marinos/audit-cards.py" "$ROOT_DIR" --fail
 
 if command -v node >/dev/null 2>&1; then
   node --check "$ROOT_DIR/vendor/marinos/marinos.js"
