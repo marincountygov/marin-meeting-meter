@@ -17,7 +17,8 @@ docs and generated data are skipped) and lists:
     surface and a class of your own only for what is inside it.
 
 The Learn editor (classes that start with `editor-`) is left out. A rule that must stay is marked by a comment just before it:
-`/* audit-cards: exempt (the reason) */`.
+`/* audit-cards: exempt (the reason) */`. A card whose colors change with a state sets `--app-card-bg`, `--app-card-border` and
+`--app-card-shadow` on itself instead of redrawing the surface; those properties are not listed.
 """
 from __future__ import annotations
 
