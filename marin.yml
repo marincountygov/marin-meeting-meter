@@ -6,7 +6,7 @@ project:
   type: app
   owner: County of Marin
   audience: staff
-  status: prototype
+  status: beta
 
 platform:
   shell: 2.6.0
