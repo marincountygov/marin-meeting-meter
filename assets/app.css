@@ -453,6 +453,7 @@ body.meeting-idle .meeting-idle-fade-target {
   pointer-events: none;
 }
 
+/* audit-cards: exempt (the card's idle state, before a meeting starts) */
 body.meeting-idle .meeting-summary-card {
   border-color: transparent;
   background: transparent;
