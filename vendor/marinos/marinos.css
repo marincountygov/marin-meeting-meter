@@ -693,13 +693,15 @@ a.app-title-row {
   margin-bottom: 1.5rem;
 }
 
+/* The card surface. An app never redraws it. The one way to change a card's colors, for a card with a state (a card that
+   fades out its edge while idle), is to set these three custom properties on the card; the values below are the defaults. */
 .app-card {
-  background: var(--app-surface);
-  border: 1px solid var(--app-border);
+  background: var(--app-card-bg, var(--app-surface));
+  border: 1px solid var(--app-card-border, var(--app-border));
   border-radius: var(--pico-border-radius);
   padding: 1rem;
   margin-bottom: 1rem;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+  box-shadow: var(--app-card-shadow, 0 1px 2px rgba(16, 24, 40, 0.06));
 }
 
 /* Secondary card: the same card, quieter. A smaller icon, title and description,
@@ -2561,7 +2563,7 @@ mark.search-hit {
   stroke-linejoin: round;
 }
 
-/* Marin App Shell 2.7.0: component integration only.
+/* Marin App Shell 2.8.0: component integration only.
    General visual rules come from the locked, unmodified Marin UI input. */
 marin-os-banner,
 marin-app-header,
