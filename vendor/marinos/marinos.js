@@ -6,8 +6,8 @@
     return;
   }
 
-  const SHELL_VERSION = "2.8.0";
-  const MARIN_UI_VERSION = "1.43.0";
+  const SHELL_VERSION = "2.10.0";
+  const MARIN_UI_VERSION = "1.44.0";
   const MARINOS_URL = "https://marincountygov.github.io/marin-os/";
   const MARINOS_STATUS_URL = `${MARINOS_URL}#status`;
   const CATALOG_URL = `${MARINOS_URL}catalog.json`;
@@ -400,7 +400,9 @@
 
       const titleCopy = document.createElement("div");
       titleCopy.className = "app-title-copy";
-      const heading = document.createElement("h1");
+      // A page below the home page has a title of its own, which is the page's one h1: its header says title-heading="false" and the
+      // app name is drawn the same way as plain text, still the link home.
+      const heading = document.createElement(normalizedAttribute(this, "title-heading", "true") === "false" ? "p" : "h1");
       heading.className = "app-title";
       const homeLink = document.createElement("a");
       homeLink.className = "app-title__link";
