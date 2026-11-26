@@ -9,7 +9,7 @@ project:
   status: beta
 
 platform:
-  shell: 2.8.0
+  shell: 2.10.0
 
 deployment:
   target: github-pages
