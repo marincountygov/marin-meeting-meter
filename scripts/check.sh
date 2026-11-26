@@ -42,8 +42,7 @@ else
 fi
 
 if [[ "$RUN_BROWSER" == 1 ]]; then
-  python3 "$ROOT_DIR/tests/browser_smoke.py"
-  python3 "$ROOT_DIR/tests/browser_security.py"
+  python3 "$ROOT_DIR/tests/browser_meeting_meter.py"
 else
   printf 'SKIP: Browser tests not requested; run with --browser to include them.\n'
 fi
